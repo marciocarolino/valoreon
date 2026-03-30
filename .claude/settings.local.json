@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"c:\\\\Users\\\\marci\\\\OneDrive\\\\Documentos\\\\Projetos\\\\Valoreon\\\\frontend\\\\src\\\\app\\\\features\\\\user\"\" 2>&1 || echo \"Directory does not exist \")",
+      "Bash(ls -la \"c:\\\\Users\\\\marci\\\\OneDrive\\\\Documentos\\\\Projetos\\\\Valoreon\\\\backend\\\\src\\\\main\\\\resources\\\\db\\\\migration\"\" | grep \"^-\" | wc -l && echo \"---\" && ls \"c:UsersmarciOneDriveDocumentosProjetosValoreonbackendsrcmainresourcesdbmigration\"\")",
+      "Bash(grep -l \"controller\\\\|@RestController\" c:UsersmarciOneDriveDocumentosProjetosValoreonbackendsrcmainjavacomvaloreoncontroller*.java)",
+      "Bash(ls -1d /c/Users/marci/OneDrive/Documentos/Projetos/Valoreon/frontend/src/app/features/*/)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(xargs grep:*)",
+      "Bash(find c:UsersmarciOneDriveDocumentosProjetosValoreon/frontend -type f \\\\\\(-name *modal* -o -name *Modal* -o -name *Plano* -o -name *Acesso* \\\\\\))"
+    ]
+  }
+}

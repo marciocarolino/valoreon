@@ -1,0 +1,234 @@
+<!-- ═══ Page header ═══ -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Minhas Impressoras</h1>
+    <p class="page-sub">Gerencie e acompanhe suas impressoras 3D</p>
+  </div>
+  <button class="btn-new" type="button" (click)="openModal()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Nova Impressora
+  </button>
+</div>
+
+<!-- ═══ Loading state ═══ -->
+@if (isLoadingList()) {
+  <div class="list-feedback">
+    <span class="list-spinner" aria-label="Carregando"></span>
+    <p>Carregando impressoras…</p>
+  </div>
+}
+
+<!-- ═══ Error state ═══ -->
+@if (listError()) {
+  <div class="alert-banner alert-error" role="alert">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ listError() }}
+    <button class="retry-btn" type="button" (click)="loadPrinters()">Tentar novamente</button>
+  </div>
+}
+
+<!-- ═══ Empty state ═══ -->
+@if (!isLoadingList() && !listError() && printers().length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+    </div>
+    <p class="empty-title">Nenhuma impressora cadastrada</p>
+    <p class="empty-desc">Clique em "+ Nova Impressora" para começar.</p>
+  </div>
+}
+
+<!-- ═══ Printers grid ═══ -->
+@if (!isLoadingList() && printers().length > 0) {
+  <div class="printers-grid">
+    @for (printer of printers(); track printer.id) {
+      <div class="printer-card">
+
+        <div class="card-header">
+          <div class="printer-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+          </div>
+          <span class="cost-badge">
+            R$ {{ printer.costPerHour | number:'1.4-4' }}/h
+          </span>
+        </div>
+
+        <div class="card-body">
+          <div class="card-body-top">
+            <div>
+              <h2 class="printer-name">{{ printer.name }}</h2>
+              <p class="printer-brand">{{ printer.brand }}</p>
+            </div>
+            <span class="status-badge {{ getStatusClass(printer.status) }}"
+              [attr.aria-label]="'Status: ' + getStatusLabel(printer.status)">
+              <span class="status-dot" aria-hidden="true"></span>
+              {{ getStatusLabel(printer.status) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="spec-row">
+            <span class="spec-icon" aria-hidden="true">⚡</span>
+            <span class="spec-text">{{ printer.powerConsumptionWatts }} W</span>
+            <span class="spec-sep" aria-hidden="true">·</span>
+            <span class="spec-text">R$ {{ printer.energyCostPerKwh | number:'1.2-2' }}/kWh</span>
+          </div>
+
+          <div class="card-actions">
+
+            <app-dropdown
+              class="printer-status-dd"
+              [options]="statusOptions"
+              [ngModel]="printer.status"
+              (ngModelChange)="onPrinterStatusChange(printer, $event)"
+              [pending]="changingStatusId() === printer.id"
+              [block]="false"
+              [ariaLabel]="'Status de ' + printer.name"
+              [inputId]="'printer-status-' + printer.id"
+            />
+
+            <a class="btn-details" [routerLink]="['/impressoras', printer.id]">Ver detalhes</a>
+          </div>
+        </div>
+
+      </div>
+    }
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════
+     Modal — Nova Impressora
+════════════════════════════════════════════════════════ -->
+@if (modalOpen()) {
+  <div class="modal-overlay" role="dialog" aria-modal="true"
+    aria-labelledby="modal-title" (click)="onOverlayClick($event)">
+
+    <div class="modal-card">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Nova Impressora</h2>
+        <button class="modal-close" type="button" (click)="closeModal()"
+          aria-label="Fechar" [disabled]="isSaving()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form error -->
+      @if (formError()) {
+        <div class="alert-banner alert-error" role="alert">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {{ formError() }}
+        </div>
+      }
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="savePrinter()" novalidate>
+
+        <div class="field">
+          <label class="field-label" for="f-name">Nome da impressora</label>
+          <input id="f-name" class="field-input"
+            [class.is-invalid]="form.controls.name.invalid && form.controls.name.touched"
+            type="text" formControlName="name" placeholder="Ex: Ender 3 V2" autocomplete="off">
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <span class="field-hint field-hint--error">Nome obrigatório (mín. 2 caracteres)</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="f-brand">Marca</label>
+          <input id="f-brand" class="field-input"
+            [class.is-invalid]="form.controls.brand.invalid && form.controls.brand.touched"
+            type="text" formControlName="brand" placeholder="Ex: Creality" autocomplete="off">
+          @if (form.controls.brand.invalid && form.controls.brand.touched) {
+            <span class="field-hint field-hint--error">Marca obrigatória</span>
+          }
+        </div>
+
+        <div class="fields-row">
+          <div class="field">
+            <label class="field-label" for="f-watts">Consumo médio (W)</label>
+            <input id="f-watts" class="field-input"
+              [class.is-invalid]="form.controls.powerConsumptionWatts.invalid && form.controls.powerConsumptionWatts.touched"
+              type="number" formControlName="powerConsumptionWatts" placeholder="Ex: 120" min="1">
+            @if (form.controls.powerConsumptionWatts.invalid && form.controls.powerConsumptionWatts.touched) {
+              <span class="field-hint field-hint--error">Mínimo 1 W</span>
+            } @else {
+              <span class="field-hint field-hint--help">Geralmente na ficha técnica da impressora</span>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="f-kwh">Valor do kWh (R$)</label>
+            <input id="f-kwh" class="field-input"
+              [class.is-invalid]="form.controls.energyCostPerKwh.invalid && form.controls.energyCostPerKwh.touched"
+              type="number" formControlName="energyCostPerKwh" placeholder="Ex: 0,90" step="0.01" min="0.01">
+            @if (form.controls.energyCostPerKwh.invalid && form.controls.energyCostPerKwh.touched) {
+              <span class="field-hint field-hint--error">Valor obrigatório</span>
+            } @else {
+              <span class="field-hint field-hint--help">Consulte sua conta de energia</span>
+            }
+          </div>
+        </div>
+
+        <!-- Cost preview -->
+        <div class="cost-preview">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Custo por hora estimado:
+          <strong>R$ {{ estimatedCost() | number:'1.4-4' }}</strong>
+        </div>
+
+        <!-- Actions -->
+        <div class="modal-actions">
+          <button class="btn-cancel" type="button" (click)="closeModal()"
+            [disabled]="isSaving()">
+            Cancelar
+          </button>
+          <button class="btn-save" type="submit" [disabled]="form.invalid || isSaving()">
+            @if (isSaving()) {
+              <span class="btn-spinner" aria-hidden="true"></span>
+              Salvando…
+            } @else {
+              Salvar Impressora
+            }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}

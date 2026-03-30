@@ -1,0 +1,286 @@
+<div class="register-page">
+
+  <!-- ════════════════════════════════════
+       Left panel — visual / branding
+  ════════════════════════════════════ -->
+  <aside class="image-panel" aria-hidden="true">
+    <div class="panel-dots"></div>
+
+    <div class="panel-body">
+      <!-- Brand mark -->
+      <div class="panel-brand">
+        <span class="panel-brand-icon">V</span>
+        <span class="panel-brand-name">Valoreon</span>
+      </div>
+
+      <!-- Decorative 3D cube wireframe -->
+      <div class="cube-scene">
+        <div class="cube">
+          <div class="cube-face cube-top"></div>
+          <div class="cube-face cube-left"></div>
+          <div class="cube-face cube-right"></div>
+        </div>
+        <div class="cube-glow"></div>
+        <div class="nozzle">
+          <div class="nozzle-body"></div>
+          <div class="nozzle-tip"></div>
+          <div class="filament"></div>
+        </div>
+      </div>
+
+      <!-- Feature highlights -->
+      <div class="panel-features">
+        <h2 class="panel-headline">
+          Gestão completa para sua<br />empresa de impressão 3D
+        </h2>
+
+        <ul class="feature-list">
+          <li class="feature-item">
+            <span class="feature-check" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
+            <span>Controle de custos por filamento e energia</span>
+          </li>
+          <li class="feature-item">
+            <span class="feature-check" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
+            <span>Gestão de impressoras e fila de produção</span>
+          </li>
+          <li class="feature-item">
+            <span class="feature-check" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
+            <span>Acompanhamento de lucro em tempo real</span>
+          </li>
+          <li class="feature-item">
+            <span class="feature-check" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
+            <span>Precificação inteligente de peças</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ════════════════════════════════════
+       Right panel — register form
+  ════════════════════════════════════ -->
+  <main class="form-panel">
+    <div class="glow glow-top" aria-hidden="true"></div>
+    <div class="glow glow-bottom" aria-hidden="true"></div>
+
+    <div class="register-card">
+
+      <!-- Brand (mobile only) -->
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">V</span>
+        <div>
+          <h1 class="brand-name">Valoreon</h1>
+          <p class="brand-tagline">Controle custos, produção e lucro da sua empresa 3D</p>
+        </div>
+      </div>
+
+      <div class="card-divider" aria-hidden="true"></div>
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- Error banner -->
+        @if (errorMessage()) {
+          <div class="alert-banner alert-error" role="alert">
+            <svg class="alert-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <!-- Success banner -->
+        @if (successMessage()) {
+          <div class="alert-banner alert-success" role="status">
+            <svg class="alert-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            {{ successMessage() }}
+          </div>
+        }
+
+        <!-- Name -->
+        <div class="field">
+          <label for="name" class="field-label">Nome completo</label>
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            placeholder="Seu nome"
+            autocomplete="name"
+            class="field-input"
+            [ngClass]="{ 'is-invalid': name?.invalid && name?.touched }"
+          />
+          @if (name?.touched && name?.hasError('required')) {
+            <span class="field-hint field-hint--error">Nome é obrigatório.</span>
+          } @else if (name?.touched && name?.hasError('minlength')) {
+            <span class="field-hint field-hint--error">Mínimo de 2 caracteres.</span>
+          }
+        </div>
+
+        <!-- Email -->
+        <div class="field">
+          <label for="email" class="field-label">Email</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="seu@empresa.com"
+            autocomplete="email"
+            class="field-input"
+            [ngClass]="{ 'is-invalid': email?.invalid && email?.touched }"
+          />
+          @if (email?.touched && email?.hasError('required')) {
+            <span class="field-hint field-hint--error">Email é obrigatório.</span>
+          } @else if (email?.touched && email?.hasError('email')) {
+            <span class="field-hint field-hint--error">Informe um email válido.</span>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+          <label for="password" class="field-label">Senha</label>
+          <div class="field-row">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Mínimo 6 caracteres"
+              autocomplete="new-password"
+              class="field-input"
+              [ngClass]="{ 'is-invalid': password?.invalid && password?.touched }"
+            />
+            <button
+              type="button"
+              class="eye-toggle"
+              (click)="togglePassword()"
+              [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'"
+            >
+              @if (showPassword()) {
+                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              }
+            </button>
+          </div>
+          @if (password?.touched && password?.hasError('required')) {
+            <span class="field-hint field-hint--error">Senha é obrigatória.</span>
+          } @else if (password?.touched && password?.hasError('minlength')) {
+            <span class="field-hint field-hint--error">Mínimo de 6 caracteres.</span>
+          }
+        </div>
+
+        <!-- Confirm password -->
+        <div class="field">
+          <label for="confirmPassword" class="field-label">Confirmar senha</label>
+          <div class="field-row">
+            <input
+              id="confirmPassword"
+              [type]="showConfirm() ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              placeholder="Repita a senha"
+              autocomplete="new-password"
+              class="field-input"
+              [ngClass]="{
+                'is-invalid':
+                  (confirmPassword?.touched && confirmPassword?.hasError('required')) ||
+                  (confirmPassword?.touched && form.hasError('passwordMismatch'))
+              }"
+            />
+            <button
+              type="button"
+              class="eye-toggle"
+              (click)="toggleConfirm()"
+              [attr.aria-label]="showConfirm() ? 'Ocultar confirmação' : 'Mostrar confirmação'"
+            >
+              @if (showConfirm()) {
+                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              }
+            </button>
+          </div>
+          @if (confirmPassword?.touched && confirmPassword?.hasError('required')) {
+            <span class="field-hint field-hint--error">Confirmação é obrigatória.</span>
+          } @else if (confirmPassword?.touched && form.hasError('passwordMismatch')) {
+            <span class="field-hint field-hint--error">As senhas não coincidem.</span>
+          }
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="btn-submit"
+          [disabled]="isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+            Criando conta...
+          } @else {
+            Criar conta
+          }
+        </button>
+
+        <!-- Sign-in link -->
+        <p class="signin-link">
+          Já tem conta?
+          <a routerLink="/login" class="signin-anchor">Entrar</a>
+        </p>
+
+      </form>
+    </div>
+  </main>
+
+</div>

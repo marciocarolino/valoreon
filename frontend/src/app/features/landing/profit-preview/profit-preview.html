@@ -1,0 +1,208 @@
+<section class="profit-section">
+  <div class="container">
+
+    <div class="section-header">
+      <h2 class="section-title">
+        Você produz peças. Mas sabe quanto lucra em cada uma?
+      </h2>
+      <p class="section-sub">
+        Cada impressão tem custo, tempo e margem. O Valoreon transforma isso em números
+        claros para você tomar decisões melhores.
+      </p>
+    </div>
+
+    <div class="info-box" role="note">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" class="info-box-icon" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p class="info-box-text">
+        <strong>Importante:</strong> as taxas são cobradas sobre o valor total da venda — não sobre o seu lucro.
+      </p>
+    </div>
+
+    <div class="items-grid">
+      @for (item of items; track item.name) {
+        <div class="item-card">
+
+          <!-- Visual mock da peça -->
+          <div class="item-visual item-visual--{{ item.icon }}" aria-hidden="true">
+            @if (item.icon === 'decor') {
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="2" stroke-dasharray="6 3" opacity="0.4"/>
+                <circle cx="40" cy="40" r="18" fill="currentColor" opacity="0.12"/>
+                <circle cx="40" cy="40" r="9"  fill="currentColor" opacity="0.5"/>
+                <circle cx="40" cy="16" r="4"  fill="currentColor" opacity="0.6"/>
+                <circle cx="40" cy="64" r="4"  fill="currentColor" opacity="0.6"/>
+                <circle cx="16" cy="40" r="4"  fill="currentColor" opacity="0.6"/>
+                <circle cx="64" cy="40" r="4"  fill="currentColor" opacity="0.6"/>
+              </svg>
+            }
+            @if (item.icon === 'gear') {
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="40" cy="40" r="14" fill="currentColor" opacity="0.15"/>
+                <circle cx="40" cy="40" r="7"  fill="none" stroke="currentColor" stroke-width="2.5"/>
+                <path d="M40 20 L43 26 L37 26 Z" fill="currentColor" opacity="0.7"/>
+                <path d="M40 60 L43 54 L37 54 Z" fill="currentColor" opacity="0.7"/>
+                <path d="M20 40 L26 43 L26 37 Z" fill="currentColor" opacity="0.7"/>
+                <path d="M60 40 L54 43 L54 37 Z" fill="currentColor" opacity="0.7"/>
+                <path d="M26 26 L30 31 L25 32 Z" fill="currentColor" opacity="0.5"/>
+                <path d="M54 54 L50 49 L55 48 Z" fill="currentColor" opacity="0.5"/>
+                <path d="M54 26 L50 31 L55 32 Z" fill="currentColor" opacity="0.5"/>
+                <path d="M26 54 L30 49 L25 48 Z" fill="currentColor" opacity="0.5"/>
+                <circle cx="40" cy="40" r="22" stroke="currentColor" stroke-width="1.5" opacity="0.2" stroke-dasharray="4 4"/>
+              </svg>
+            }
+            @if (item.icon === 'miniature') {
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="28" y="52" width="24" height="6" rx="2" fill="currentColor" opacity="0.5"/>
+                <rect x="32" y="44" width="16" height="10" rx="2" fill="currentColor" opacity="0.4"/>
+                <ellipse cx="40" cy="38" rx="14" ry="10" fill="currentColor" opacity="0.2"/>
+                <ellipse cx="40" cy="36" rx="10" ry="7"  fill="currentColor" opacity="0.35"/>
+                <ellipse cx="40" cy="34" rx="6"  ry="4"  fill="currentColor" opacity="0.55"/>
+                <circle  cx="40" cy="30" r="5"           fill="currentColor" opacity="0.7"/>
+              </svg>
+            }
+          </div>
+
+          <!-- Nome -->
+          <h3 class="item-name">{{ item.name }}</h3>
+
+          <!-- Dados financeiros base -->
+          <div class="item-stats">
+            <div class="stat stat--cost">
+              <span class="stat-label">Custo</span>
+              <span class="stat-value">{{ item.cost }}</span>
+            </div>
+            <div class="stat stat--sale">
+              <span class="stat-label">Venda</span>
+              <span class="stat-value">{{ item.sale }}</span>
+            </div>
+            <div class="stat stat--profit">
+              <span class="stat-label">
+                Lucro
+                <span class="stat-label-tag">bruto</span>
+              </span>
+              <span class="stat-value stat-value--profit">{{ item.profit }}</span>
+            </div>
+          </div>
+
+          <!-- Comparação por canal -->
+          <div class="channels-block">
+            <div class="channels-divider" aria-hidden="true"></div>
+            <p class="channels-header" aria-label="Comparação por canal de venda">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6"  y1="20" x2="6"  y2="14"/>
+              </svg>
+              Onde vender melhor
+            </p>
+            <ul class="channel-list" role="list">
+              @for (ch of item.channels; track ch.name) {
+                <li class="channel-row" [class.channel-row--best]="ch.best" role="listitem">
+                  <span class="channel-name">
+                    @if (ch.best) {
+                      <span class="channel-dot channel-dot--best" aria-label="Melhor opção" aria-hidden="true"></span>
+                    } @else {
+                      <span class="channel-dot" aria-hidden="true"></span>
+                    }
+                    {{ ch.name }}
+                    <span class="channel-fee">({{ ch.fee === '—' ? '0%' : ch.fee }})</span>
+                  </span>
+                  <span class="channel-profit" [class.channel-profit--best]="ch.best">
+                    {{ ch.profit }}
+                    @if (ch.best) {
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
+          </div>
+
+          <!-- Seção de frete -->
+          <div class="shipping-block">
+            <div class="channels-divider" aria-hidden="true"></div>
+            <p class="channels-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <rect x="1" y="3" width="15" height="13" rx="1"/>
+                <path d="M16 8h4l3 5v3h-7V8z"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/>
+                <circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+              Lucro real (taxas + envio)
+            </p>
+            <ul class="channel-list" role="list">
+              @for (ch of item.channels; track ch.name) {
+                <li class="channel-row shipping-row" [class.channel-row--loss]="ch.shippingNegative" role="listitem">
+                  <span class="channel-name shipping-name">
+                    <span class="channel-dot"
+                      [class.channel-dot--loss]="ch.shippingNegative"
+                      aria-hidden="true"></span>
+                    <span class="shipping-name-wrap">
+                      {{ ch.name }}
+                      <span class="shipping-detail">{{ ch.shippingDetail }}</span>
+                    </span>
+                  </span>
+                  <span class="channel-profit"
+                    [class.channel-profit--loss]="ch.shippingNegative"
+                    [class.channel-profit--best]="!ch.shippingNegative">
+                    {{ ch.shippingProfit }}
+                    @if (ch.shippingNegative) {
+                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <polyline points="19 12 12 19 5 12"/>
+                      </svg>
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
+          </div>
+
+        </div>
+      }
+    </div>
+
+    <!-- Frase estratégica de canal -->
+    <p class="channel-alert">
+      Você pode estar perdendo até 20% de lucro escolhendo o canal errado.
+    </p>
+
+    <!-- Frase de impacto do frete -->
+    <p class="shipping-alert">
+      Depois de taxas e frete, seu lucro pode desaparecer.
+    </p>
+
+    <!-- Frase de impacto + CTA -->
+    <div class="profit-cta-row">
+      <p class="impact-phrase">
+        "Você não precisa adivinhar. O Valoreon mostra exatamente onde está o seu lucro."
+      </p>
+      <a routerLink="/register" class="btn-cta-profit">
+        Ver meu lucro agora
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </a>
+    </div>
+
+  </div>
+</section>

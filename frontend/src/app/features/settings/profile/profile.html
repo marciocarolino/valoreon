@@ -1,0 +1,49 @@
+<div class="profile-page">
+
+  <!-- ═══ Page title ═══ -->
+  <div class="page-title-row">
+    <h1 class="page-title">Meu Perfil</h1>
+  </div>
+
+  <!-- ═══ Header card ═══ -->
+  <div class="profile-header">
+    @if (user()?.profileImageUrl) {
+      <img class="profile-avatar profile-avatar--img"
+        [src]="user()!.profileImageUrl!"
+        [alt]="user()?.name ?? 'Avatar'"
+        aria-hidden="true" />
+    } @else {
+      <div class="profile-avatar" aria-hidden="true">{{ initials() }}</div>
+    }
+    <div class="profile-identity">
+      <p class="profile-name">{{ user()?.name ?? '—' }}</p>
+      <p class="profile-email">{{ user()?.email ?? '—' }}</p>
+    </div>
+  </div>
+
+  <!-- ═══ Info section ═══ -->
+  <div class="profile-section">
+    <p class="section-label">Informações da conta</p>
+    <div class="profile-fields">
+
+      <div class="profile-field">
+        <span class="field-label">Nome</span>
+        <span class="field-value">{{ user()?.name ?? '—' }}</span>
+      </div>
+
+      <div class="profile-field">
+        <span class="field-label">E-mail</span>
+        <span class="field-value">{{ user()?.email ?? '—' }}</span>
+      </div>
+
+      <div class="profile-field">
+        <span class="field-label">Telefone</span>
+        <span class="field-value" [class.field-value--empty]="!user()?.phone">
+          {{ user()?.phone ?? 'Não informado' }}
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+</div>

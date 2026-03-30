@@ -1,0 +1,30 @@
+package com.valoreon.security;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import com.valoreon.repository.UserRepository;
+
+@Service
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+	private final UserRepository userRepository;
+
+	public UserDetailsServiceImpl(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
+
+	@Override
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		return userRepository.findByEmail(email)
+				.map(user -> {
+					if (!user.isActive()) {
+						throw new UsernameNotFoundException("User account is disabled");
+					}
+					return new TenantUserDetails(user.getId(), user.getEmail(), user.getPassword());
+				})
+				.orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+	}
+}

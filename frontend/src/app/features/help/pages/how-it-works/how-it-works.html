@@ -1,0 +1,112 @@
+<div class="help-page">
+  <header class="help-header">
+    <h1 class="help-title">Como calculamos seu lucro real</h1>
+    <p class="help-intro">
+      Incluindo custos, taxas e envio — veja exatamente como cada valor afeta o que sobra no seu bolso.
+    </p>
+  </header>
+
+  <div class="help-grid">
+    <section class="help-card" aria-labelledby="h-material">
+      <h2 id="h-material" class="help-card__title">Custo de material</h2>
+      <ul class="help-list">
+        <li>Calculado com base no <strong>peso da peça</strong> e no <strong>preço do filamento por kg</strong>.</li>
+        <li>Exemplo: peça de 90&nbsp;g com filamento a R$&nbsp;80/kg → custo de material = R$&nbsp;7,20.</li>
+      </ul>
+    </section>
+
+    <section class="help-card" aria-labelledby="h-energia">
+      <h2 id="h-energia" class="help-card__title">Custo de energia</h2>
+      <ul class="help-list">
+        <li>Calculado usando o <strong>tempo de impressão</strong> e o <strong>custo por hora</strong> da impressora, configurado no cadastro da máquina.</li>
+      </ul>
+    </section>
+
+    <section class="help-card" aria-labelledby="h-total">
+      <h2 id="h-total" class="help-card__title">Custo total de produção</h2>
+      <ul class="help-list">
+        <li>É a <strong>soma do custo de material e de energia</strong> para aquela produção.</li>
+        <li>Multiplicado pela <strong>quantidade de peças</strong> quando há mais de uma unidade.</li>
+      </ul>
+    </section>
+
+    <section class="help-card" aria-labelledby="h-taxa">
+      <h2 id="h-taxa" class="help-card__title">Taxas de marketplace</h2>
+      <ul class="help-list">
+        <li>Plataformas como Mercado Livre, Amazon e Shopee cobram uma <strong>porcentagem sobre o preço de venda</strong>.</li>
+        <li>Essa taxa é <strong>descontada do seu faturamento</strong>, não do lucro — por isso impacta diretamente o que você recebe.</li>
+        <li>No sistema, você escolhe o canal de venda e a taxa é aplicada automaticamente.</li>
+      </ul>
+    </section>
+
+    <section class="help-card" aria-labelledby="h-frete">
+      <h2 id="h-frete" class="help-card__title">Frete</h2>
+      <ul class="help-list">
+        <li>O custo de envio <strong>reduz diretamente o lucro</strong> quando incluído no cálculo.</li>
+        <li>Você pode ativar a opção "Incluir frete" ao registrar uma produção e informar o valor do envio.</li>
+        <li>O frete é dividido pela quantidade de peças quando há mais de uma unidade.</li>
+      </ul>
+    </section>
+
+    <section class="help-card" aria-labelledby="h-lucro">
+      <h2 id="h-lucro" class="help-card__title">Lucro real</h2>
+      <ul class="help-list">
+        <li>O lucro real é o que sobra depois de descontar <strong>todos os custos</strong>:</li>
+        <li><code class="help-formula">Lucro = Venda &minus; Custo de produção &minus; Taxa &minus; Frete</code></li>
+        <li>Se não houver taxa ou frete, esses termos são zero e o cálculo simplifica automaticamente.</li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- Microcopy destaque -->
+  <div class="help-callout" role="note">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true" class="help-callout__icon">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="8.01"/>
+      <line x1="12" y1="12" x2="12" y2="16"/>
+    </svg>
+    <p>
+      <strong>Taxas são aplicadas sobre o valor da venda, não sobre o lucro.</strong>
+      Isso significa que uma taxa de 15% sobre R$&nbsp;25,00 desconta R$&nbsp;3,75, independentemente do custo de produção.
+    </p>
+  </div>
+
+  <!-- Exemplo completo -->
+  <section class="help-example" aria-labelledby="h-exemplo">
+    <h2 id="h-exemplo" class="help-example__title">Exemplo completo</h2>
+
+    <div class="help-example__inputs">
+      <p><span class="help-k">Peso da peça</span> 90&nbsp;g</p>
+      <p><span class="help-k">Tempo de impressão</span> 5&nbsp;h</p>
+      <p><span class="help-k">Preço de venda</span> R$&nbsp;25,00</p>
+      <p><span class="help-k">Canal de venda</span> Mercado Livre</p>
+      <p><span class="help-k">Taxa</span> 15%</p>
+      <p><span class="help-k">Frete</span> R$&nbsp;5,00</p>
+    </div>
+
+    <div class="help-example__results">
+      <p>
+        <span class="help-k">Custo de produção</span>
+        <span class="help-num help-num--cost">− R$&nbsp;8,28</span>
+      </p>
+      <p>
+        <span class="help-k">Taxa Mercado Livre (15%)</span>
+        <span class="help-num help-num--cost">− R$&nbsp;3,75</span>
+      </p>
+      <p>
+        <span class="help-k">Frete</span>
+        <span class="help-num help-num--cost">− R$&nbsp;5,00</span>
+      </p>
+      <p class="help-example__total">
+        <span class="help-k"><strong>Lucro real</strong></span>
+        <span class="help-num help-num--profit">R$&nbsp;7,97</span>
+      </p>
+    </div>
+  </section>
+
+  <p class="help-footer-msg">
+    Todos os cálculos são automáticos. Configure sua impressora corretamente para obter estimativas precisas.
+  </p>
+</div>

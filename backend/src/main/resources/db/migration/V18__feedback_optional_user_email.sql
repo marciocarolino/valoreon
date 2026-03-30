@@ -1,0 +1,5 @@
+ALTER TABLE feedback
+    ALTER COLUMN user_id DROP NOT NULL;
+
+ALTER TABLE feedback
+    ADD COLUMN email VARCHAR(255);

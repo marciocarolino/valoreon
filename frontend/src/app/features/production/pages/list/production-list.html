@@ -1,0 +1,924 @@
+<!-- ═══ Toast ═══ -->
+@if (toastMessage()) {
+  <div class="toast toast--error" role="alert" aria-live="assertive">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span>{{ toastMessage() }}</span>
+    <button class="toast-close" type="button" (click)="dismissToast()" aria-label="Fechar">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+}
+
+<!-- ═══ Page header ═══ -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Produção</h1>
+    <p class="page-sub">Registre e acompanhe suas peças impressas</p>
+  </div>
+  <button class="btn-new" type="button" (click)="openModal()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Nova Produção
+  </button>
+</div>
+
+<!-- ═══ Loading ═══ -->
+@if (isLoading()) {
+  <div class="list-feedback">
+    <span class="list-spinner" aria-label="Carregando"></span>
+    <p>Carregando produções…</p>
+  </div>
+}
+
+<!-- ═══ Error ═══ -->
+@if (listError()) {
+  <div class="alert-banner alert-error" role="alert">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ listError() }}
+    <button class="retry-btn" type="button" (click)="loadProductions()">Tentar novamente</button>
+  </div>
+}
+
+<!-- ═══ Tabs ═══ -->
+<div class="prod-tabs">
+  <button type="button" class="prod-tab" [class.prod-tab--active]="activeTab() === 'active'"
+    (click)="switchTab('active')">Produção</button>
+  <button type="button" class="prod-tab" [class.prod-tab--active]="activeTab() === 'archived'"
+    (click)="switchTab('archived')">Histórico</button>
+</div>
+
+<!-- ═══ ABA: Produção ═══ -->
+@if (activeTab() === 'active') {
+  @if (!isLoading() && !listError()) {
+
+    <!-- ── Filtro de data ─────────────────────────────────────────── -->
+    <div class="date-filter">
+      <div class="date-filter__presets">
+        <button type="button" class="date-preset-btn"
+          [class.date-preset-btn--active]="datePreset() === 'all'"
+          (click)="setDatePreset('all')">Todos</button>
+        <button type="button" class="date-preset-btn"
+          [class.date-preset-btn--active]="datePreset() === 'today'"
+          (click)="setDatePreset('today')">Hoje</button>
+        <button type="button" class="date-preset-btn"
+          [class.date-preset-btn--active]="datePreset() === '7d'"
+          (click)="setDatePreset('7d')">7 dias</button>
+        <button type="button" class="date-preset-btn"
+          [class.date-preset-btn--active]="datePreset() === '30d'"
+          (click)="setDatePreset('30d')">30 dias</button>
+        <button type="button" class="date-preset-btn"
+          [class.date-preset-btn--active]="datePreset() === 'custom'"
+          (click)="setDatePreset('custom')">Personalizado</button>
+      </div>
+
+      @if (showCustom()) {
+        <div class="date-filter__custom">
+          <input type="date" class="date-input" [ngModel]="customStart()"
+            (ngModelChange)="customStart.set($event)" aria-label="Data inicial" />
+          <span class="date-filter__sep">—</span>
+          <input type="date" class="date-input" [ngModel]="customEnd()"
+            (ngModelChange)="customEnd.set($event)" aria-label="Data final" />
+          <button type="button" class="date-filter-btn"
+            [disabled]="!customStart() || !customEnd()"
+            (click)="applyCustomFilter()">Filtrar</button>
+        </div>
+      }
+
+      @if (dateFilterLabel()) {
+        <p class="date-filter__label">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          {{ dateFilterLabel() }}
+        </p>
+      }
+    </div>
+
+    <div class="list-toolbar">
+      <label class="filter-label" for="prod-printer-filter">Impressora</label>
+      <app-dropdown
+        inputId="prod-printer-filter"
+        [options]="printerFilterOptions()"
+        [ngModel]="selectedPrinterId()"
+        (ngModelChange)="onPrinterFilterChange($event)"
+        ariaLabel="Filtrar por impressora"
+        placeholder="Todas"
+        [block]="false"
+        [disabled]="isLoading()"
+      />
+    </div>
+
+    @if (productions().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </div>
+        <p class="empty-title">
+          {{ (selectedPrinterId() !== null || datePreset() !== 'all') ? 'Nenhuma produção para este filtro' : 'Nenhuma produção registrada' }}
+        </p>
+        <p class="empty-desc">
+          @if (selectedPrinterId() !== null || datePreset() !== 'all') {
+            Tente outro período ou limpe os filtros.
+          } @else {
+            Clique em "+ Nova Produção" para começar.
+          }
+        </p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <div class="table-container">
+          <table class="prod-table" aria-label="Lista de produções">
+            <colgroup>
+              <col class="col-w-impressora">
+              <col class="col-w-peca">
+              <col class="col-w-material">
+              <col class="col-w-qty">
+              <col class="col-w-tempo">
+              <col class="col-w-money">
+              <col class="col-w-money">
+              <col class="col-w-profit">
+              <col class="col-w-money">
+              <col class="col-w-date">
+              <col class="col-w-actions">
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="col-text" scope="col">Impressora</th>
+                <th class="col-text" scope="col">Peça</th>
+                <th class="col-text col-tag hide-mobile" scope="col">Material</th>
+                <th class="col-qty" scope="col">Qtd</th>
+                <th class="col-tempo hide-mobile" scope="col">Tempo (h)</th>
+                <th class="col-money col-cost" scope="col">Custo</th>
+                <th class="col-money" scope="col">Preço por peça</th>
+                <th class="col-profit" scope="col">Lucro</th>
+                <th class="col-money col-total" scope="col">Receita total</th>
+                <th class="col-date" scope="col">Data</th>
+                <th class="col-actions" scope="col">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (prod of productions(); track prod.id) {
+                <tr>
+                  <td class="col-text cell-printer">{{ prod.printerName }}</td>
+                  <td class="col-text cell-name">{{ prod.name }}</td>
+                  <td class="col-text col-tag hide-mobile">
+                    <span class="material-tag material-{{ prod.material.toLowerCase() }}">{{ prod.material }}</span>
+                  </td>
+                  <td class="col-qty">{{ prod.quantity }}</td>
+                  <td class="col-tempo hide-mobile">{{ prod.printTimeHours | number:'1.1-1' }}</td>
+                  <td class="col-money col-cost">{{ formatCurrency(prod.totalCost) }}</td>
+                  <td class="col-money">{{ formatCurrency(prod.salePrice) }}</td>
+                  <td class="col-profit">
+                    <span class="profit-badge profit-{{ profitClass(prod.profit) }}">{{ formatCurrency(prod.profit) }}</span>
+                  </td>
+                  <td class="col-money col-total">{{ formatCurrency(prod.salePrice * prod.quantity) }}</td>
+                  <td class="col-date">{{ formatDate(prod.createdAt) }}</td>
+                  <td class="col-actions">
+                    <div class="row-actions">
+                      <button type="button" class="btn-icon-action"
+                        (click)="openEditModal(prod)"
+                        [disabled]="modalOpen() || !!archiveTarget()"
+                        [attr.aria-label]="'Editar produção ' + prod.name">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" aria-hidden="true">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <button type="button" class="btn-icon-action btn-icon-action--danger"
+                        (click)="openArchiveConfirm(prod)"
+                        [disabled]="modalOpen() || !!archiveTarget()"
+                        [attr.aria-label]="'Arquivar produção ' + prod.name"
+                        title="Mover para histórico">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="21 8 21 21 3 21 3 8"/>
+                          <rect x="1" y="3" width="22" height="5"/>
+                          <line x1="10" y1="12" x2="14" y2="12"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="list-cursor-controls">
+          <app-dropdown
+            inputId="prod-page-size"
+            [options]="pageSizeOptions"
+            [ngModel]="limit()"
+            (ngModelChange)="onLimitChange($event)"
+            ariaLabel="Itens por página"
+            [block]="false"
+            [disabled]="isLoading()"
+          />
+          @if (hasNext()) {
+            <button type="button" class="btn-load-more" (click)="loadMore()" [disabled]="isLoadingMore()">
+              @if (isLoadingMore()) {
+                <span class="load-more-spinner" aria-hidden="true"></span>
+                Carregando…
+              } @else {
+                Carregar mais
+              }
+            </button>
+          }
+        </div>
+      </div>
+    }
+  }
+}
+
+<!-- ═══ ABA: Histórico ═══ -->
+@if (activeTab() === 'archived') {
+  @if (isLoadingArchived()) {
+    <div class="list-feedback">
+      <span class="list-spinner" aria-label="Carregando"></span>
+      <p>Carregando histórico…</p>
+    </div>
+  }
+  @if (archivedError()) {
+    <div class="alert-banner alert-error" role="alert">{{ archivedError() }}
+      <button class="retry-btn" type="button" (click)="loadArchived()">Tentar novamente</button>
+    </div>
+  }
+  @if (!isLoadingArchived() && !archivedError()) {
+    @if (archivedProductions().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polyline points="21 8 21 21 3 21 3 8"/>
+            <rect x="1" y="3" width="22" height="5"/>
+            <line x1="10" y1="12" x2="14" y2="12"/>
+          </svg>
+        </div>
+        <p class="empty-title">Nenhuma produção no histórico</p>
+        <p class="empty-desc">Produções arquivadas aparecerão aqui.</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <div class="table-container">
+          <table class="prod-table" aria-label="Histórico de produções">
+            <colgroup>
+              <col class="col-w-impressora">
+              <col class="col-w-peca">
+              <col class="col-w-material">
+              <col class="col-w-qty">
+              <col class="col-w-date">
+              <col class="col-w-actions">
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="col-text" scope="col">Impressora</th>
+                <th class="col-text" scope="col">Peça</th>
+                <th class="col-text col-tag hide-mobile" scope="col">Material</th>
+                <th class="col-qty" scope="col">Qtd</th>
+                <th class="col-date" scope="col">Data</th>
+                <th class="col-actions" scope="col">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (prod of archivedProductions(); track prod.id) {
+                <tr class="row-archived">
+                  <td class="col-text cell-printer">{{ prod.printerName }}</td>
+                  <td class="col-text cell-name">{{ prod.name }}</td>
+                  <td class="col-text col-tag hide-mobile">
+                    <span class="material-tag material-{{ prod.material.toLowerCase() }}">{{ prod.material }}</span>
+                  </td>
+                  <td class="col-qty">{{ prod.quantity }}</td>
+                  <td class="col-date">{{ formatDate(prod.createdAt) }}</td>
+                  <td class="col-actions">
+                    <div class="row-actions">
+                      <button type="button" class="btn-icon-action btn-icon-action--restore"
+                        (click)="openRestoreConfirm(prod)"
+                        [disabled]="!!restoreTarget()"
+                        [attr.aria-label]="'Restaurar produção ' + prod.name"
+                        title="Restaurar para produção ativa">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" aria-hidden="true">
+                          <polyline points="1 4 1 10 7 10"/>
+                          <path d="M3.51 15a9 9 0 1 0 .49-4.68"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="list-cursor-controls">
+          @if (archivedHasNext()) {
+            <button type="button" class="btn-load-more" (click)="loadMoreArchived()"
+              [disabled]="isLoadingMoreArchived()">
+              @if (isLoadingMoreArchived()) {
+                <span class="load-more-spinner" aria-hidden="true"></span>
+                Carregando…
+              } @else {
+                Carregar mais
+              }
+            </button>
+          }
+        </div>
+      </div>
+    }
+  }
+}
+
+<!-- ═══ Archive confirmation ═══ -->
+@if (archiveTarget(); as arch) {
+  <div class="delete-confirm-overlay" role="alertdialog" aria-modal="true"
+    aria-labelledby="archive-confirm-title" (click)="cancelArchiveConfirm()">
+    <div class="delete-confirm-card" (click)="$event.stopPropagation()">
+      <p class="delete-confirm-title" id="archive-confirm-title">Mover para o histórico?</p>
+      <p class="delete-confirm-sub">{{ arch.name }}</p>
+      <p class="delete-confirm-hint">A produção poderá ser restaurada a qualquer momento.</p>
+      <div class="delete-confirm-actions">
+        <button type="button" class="btn-cancel" (click)="cancelArchiveConfirm()"
+          [disabled]="isArchiving()">Cancelar</button>
+        <button type="button" class="btn-delete-confirm" (click)="confirmArchiveProduction()"
+          [disabled]="isArchiving()">
+          @if (isArchiving()) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+            Arquivando…
+          } @else {
+            Arquivar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══ Restore confirmation ═══ -->
+@if (restoreTarget(); as rest) {
+  <div class="delete-confirm-overlay" role="alertdialog" aria-modal="true"
+    aria-labelledby="restore-confirm-title" (click)="cancelRestoreConfirm()">
+    <div class="delete-confirm-card" (click)="$event.stopPropagation()">
+      <p class="delete-confirm-title" id="restore-confirm-title">Restaurar produção?</p>
+      <p class="delete-confirm-sub">{{ rest.name }}</p>
+      <div class="delete-confirm-actions">
+        <button type="button" class="btn-cancel" (click)="cancelRestoreConfirm()"
+          [disabled]="isRestoring()">Cancelar</button>
+        <button type="button" class="btn-delete-confirm btn-restore-confirm" (click)="confirmRestoreProduction()"
+          [disabled]="isRestoring()">
+          @if (isRestoring()) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+            Restaurando…
+          } @else {
+            Restaurar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════
+     Modal — Nova Produção
+════════════════════════════════════════════════════════ -->
+@if (modalOpen()) {
+  <div class="modal-overlay" role="dialog" aria-modal="true"
+    aria-labelledby="prod-modal-title">
+
+    <div class="modal-card">
+
+      <!-- ── Confirm discard panel ── -->
+      @if (showCloseConfirm()) {
+        <div class="confirm-discard">
+          <div class="confirm-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <p class="confirm-title">Alterações não salvas</p>
+          <p class="confirm-desc">
+            Você preencheu alguns campos. Deseja sair sem salvar?
+            <br>Seus dados serão mantidos como rascunho.
+          </p>
+          <div class="confirm-actions">
+            <button class="btn-keep" type="button" (click)="cancelDiscard()">
+              Continuar editando
+            </button>
+            <button class="btn-discard" type="button" (click)="confirmDiscard()">
+              Sair sem salvar
+            </button>
+          </div>
+        </div>
+      }
+
+      <div [class.modal-blurred]="showCloseConfirm()">
+
+      <div class="modal-header">
+        <h2 class="modal-title" id="prod-modal-title">{{ isEditMode() ? 'Editar produção' : 'Nova Produção' }}</h2>
+        <button class="modal-close" type="button" (click)="requestClose()"
+          aria-label="Fechar" [disabled]="isSaving()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Draft banner -->
+      @if (hasDraft()) {
+        <div class="draft-banner" role="status">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Rascunho restaurado automaticamente.
+          <button class="draft-discard" type="button" (click)="discardDraft()">Descartar</button>
+        </div>
+      }
+
+      @if (formError()) {
+        <div class="alert-banner alert-error" role="alert">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {{ formError() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+
+        <!-- Impressora -->
+        <div class="field">
+          <label class="field-label" for="p-printer">Impressora</label>
+          <app-dropdown
+            inputId="p-printer"
+            formControlName="printerId"
+            [options]="printerModalDropdownOptions()"
+            placeholder="Selecione uma impressora…"
+            [invalid]="form.controls.printerId.invalid && form.controls.printerId.touched"
+          />
+          @if (printersForModal().length === 0) {
+            <span class="field-hint field-hint--help">
+              @if (printers().length === 0) {
+                Nenhuma impressora cadastrada ainda.
+              } @else {
+                Nenhuma impressora ativa disponível.
+              }
+            </span>
+          }
+          @if (form.controls.printerId.invalid && form.controls.printerId.touched) {
+            <span class="field-hint field-hint--error">Selecione uma impressora</span>
+          }
+        </div>
+
+        <!-- Nome da peça -->
+        <div class="field">
+          <label class="field-label" for="p-name">Nome da peça</label>
+          <input id="p-name" class="field-input"
+            [class.is-invalid]="form.controls.name.invalid && form.controls.name.touched"
+            type="text" formControlName="name" placeholder="Ex: Suporte de câmera" autocomplete="off">
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <span class="field-hint field-hint--error">Nome obrigatório (mín. 2 caracteres)</span>
+          }
+          @if (fieldErrors()['name']) {
+            <span class="field-hint field-hint--error field-hint--api">{{ fieldErrors()['name'] }}</span>
+          }
+        </div>
+
+        <!-- Material | Preço do filamento -->
+        <div class="fields-row">
+          <div class="field">
+            <label class="field-label" for="p-material">Material</label>
+            <app-dropdown
+              inputId="p-material"
+              formControlName="material"
+              [options]="materialDropdownOptions()"
+              placeholder="Selecione…"
+              [invalid]="form.controls.material.invalid && form.controls.material.touched"
+            />
+            @if (form.controls.material.invalid && form.controls.material.touched) {
+              <span class="field-hint field-hint--error">Obrigatório</span>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="p-filament-price">
+              Preço do filamento (R$/kg)
+            </label>
+            <input id="p-filament-price" class="field-input"
+              [class.is-invalid]="form.controls.filamentPrice.invalid && form.controls.filamentPrice.touched"
+              type="number" formControlName="filamentPrice"
+              placeholder="Ex: 80" step="0.01" min="0.01">
+            <span class="field-hint field-hint--help">Preenchido automaticamente pelo material</span>
+            @if (form.controls.filamentPrice.invalid && form.controls.filamentPrice.touched) {
+              <span class="field-hint field-hint--error">Informe o preço do filamento</span>
+            }
+          </div>
+        </div>
+
+        <!-- Cor | Tamanho -->
+        <div class="fields-row">
+          <div class="field">
+            <label class="field-label" for="p-color">Cor</label>
+            <app-dropdown
+              inputId="p-color"
+              formControlName="color"
+              [options]="colorDropdownOptions()"
+              placeholder="Selecione…"
+              [invalid]="form.controls.color.invalid && form.controls.color.touched"
+            />
+            @if (form.controls.color.invalid && form.controls.color.touched) {
+              <span class="field-hint field-hint--error">Obrigatório</span>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="p-size">Tamanho</label>
+            <app-dropdown
+              inputId="p-size"
+              formControlName="size"
+              [options]="sizeDropdownOptions()"
+              placeholder="Selecione…"
+              [invalid]="form.controls.size.invalid && form.controls.size.touched"
+            />
+            @if (form.controls.size.invalid && form.controls.size.touched) {
+              <span class="field-hint field-hint--error">Obrigatório</span>
+            }
+          </div>
+        </div>
+
+        <!-- ── Dados por peça (peso, tempo e preço são sempre por unidade) ── -->
+        <div class="form-section">
+          <div class="form-section-head">
+            <h3 class="form-section-title">Dados por peça</h3>
+            <button type="button" class="info-tip-btn"
+              title="Todos os valores são por peça. O sistema calcula automaticamente o total."
+              aria-label="Ajuda: valores por peça. Todos os valores são por peça. O sistema calcula automaticamente o total.">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/><path d="M12 8h.01"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="fields-row">
+            <div class="field">
+              <label class="field-label" for="p-weight">Peso por peça (g)</label>
+              <input id="p-weight" class="field-input"
+                [class.is-invalid]="form.controls.weight.invalid && form.controls.weight.touched"
+                type="number" formControlName="weight"
+                placeholder="Ex: 50 (gramas por peça)" step="1" min="1">
+              <span class="field-hint field-hint--help">
+                Informe o peso de uma única peça (em gramas)
+              </span>
+              @if (form.controls.weight.invalid && form.controls.weight.touched) {
+                <span class="field-hint field-hint--error">Mínimo 1 g</span>
+              }
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="p-time">Tempo de impressão (por peça)</label>
+              <input id="p-time" class="field-input"
+                [class.is-invalid]="form.controls.printTimeHours.invalid && form.controls.printTimeHours.touched"
+                type="number" formControlName="printTimeHours"
+                placeholder="Ex: 2 (horas por peça)" step="0.1" min="0.01">
+              <span class="field-hint field-hint--help">
+                Tempo de impressão de uma única peça (em horas)
+              </span>
+              @if (form.controls.printTimeHours.invalid && form.controls.printTimeHours.touched) {
+                <span class="field-hint field-hint--error">Mínimo 0,01 h</span>
+              }
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── Canal de venda ── -->
+        <div class="form-section">
+          <h3 class="form-section-title">Canal de venda</h3>
+
+          <div class="fields-row">
+            <div class="field">
+              <label class="field-label" for="p-channel">Canal</label>
+              <select id="p-channel" class="field-input field-select"
+                formControlName="channel"
+                (change)="onChannelChange(form.controls.channel.value ?? 'direct')"
+                [attr.disabled]="isSaving() ? true : null">
+                @for (ch of channelOptions; track ch.value) {
+                  <option [value]="ch.value">{{ ch.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="p-fee">Taxa (%)</label>
+              <input id="p-fee" class="field-input"
+                type="number"
+                formControlName="feePercent"
+                (change)="onFeePercentChange(form.controls.feePercent.value ?? 0)"
+                [attr.disabled]="isSaving() ? true : null"
+                placeholder="0"
+                step="0.1"
+                min="0"
+                max="100">
+              <span class="field-hint field-hint--help">Preenchida automaticamente — editável</span>
+            </div>
+          </div>
+
+          <div class="field shipping-toggle-field">
+            <label class="shipping-toggle-label">
+              <input type="checkbox"
+                class="shipping-checkbox"
+                [checked]="includeShipping()"
+                (change)="onShippingToggle($any($event.target).checked)"
+                [attr.disabled]="isSaving() ? true : null">
+              <span>Incluir frete</span>
+            </label>
+          </div>
+
+          @if (includeShipping()) {
+            <div class="field">
+              <label class="field-label" for="p-shipping">Valor do frete (R$)</label>
+              <input id="p-shipping" class="field-input"
+                type="number"
+                formControlName="shippingCost"
+                (input)="onShippingCostChange($any($event.target).value)"
+                [attr.disabled]="isSaving() ? true : null"
+                placeholder="Ex: 20,00"
+                step="0.01"
+                min="0">
+            </div>
+          }
+
+          <!-- ── Quantidade ── -->
+          <div class="field">
+            <label class="field-label" for="p-qty">Quantidade de peças</label>
+            <input id="p-qty" class="field-input"
+              [class.is-invalid]="form.controls.quantity.invalid && form.controls.quantity.touched"
+              type="number" formControlName="quantity" placeholder="Ex: 10" step="1" min="1">
+            @if (form.controls.quantity.invalid && form.controls.quantity.touched) {
+              <span class="field-hint field-hint--error">Mínimo 1 unidade</span>
+            }
+          </div>
+
+          <div class="field">
+            <div class="field-label-row">
+              <label class="field-label" for="p-sale-price">Preço de venda (por peça)</label>
+              <button class="btn-suggest" type="button" (click)="suggestPrice()"
+                [disabled]="estimatedCost() <= 0"
+                title="Calcula preço com 2,5× o custo por peça">
+                ✨ Sugerir preço
+              </button>
+            </div>
+            <input id="p-sale-price" class="field-input"
+              [class.is-invalid]="form.controls.salePrice.invalid && form.controls.salePrice.touched"
+              type="number" formControlName="salePrice"
+              placeholder="Ex: 30.00 (por peça)" step="0.01" min="0.01">
+            <span class="field-hint field-hint--help">
+              Preço de venda de uma única peça
+            </span>
+            @if (form.controls.salePrice.invalid && form.controls.salePrice.touched) {
+              <span class="field-hint field-hint--error">Informe o preço</span>
+            }
+            @if (fieldErrors()['salePrice']) {
+              <span class="field-hint field-hint--error field-hint--api">{{ fieldErrors()['salePrice'] }}</span>
+            }
+          </div>
+        </div>
+
+        <!-- ── Calc preview ── -->
+        <div class="calc-preview">
+          <!-- Bloco 1: por peça — métricas compactas -->
+          <div class="calc-block calc-block--secondary">
+            <h4 class="calc-block-title">Por peça</h4>
+            <div class="calc-unit-grid">
+              <div class="calc-unit-cell">
+                <span class="calc-unit-label calc-unit-label--inline-help">
+                  <span class="calc-label-text">Custo por peça</span>
+                </span>
+                <span class="calc-unit-value">{{ formatCurrency(costPerUnit()) }}</span>
+              </div>
+              <div class="calc-unit-cell">
+                <span class="calc-unit-label">Preço por peça</span>
+                <span class="calc-unit-value">{{ formatCurrency(form.controls.salePrice.value) }}</span>
+              </div>
+              <div class="calc-unit-cell" [class.calc-unit--profit]="profitPerUnit() >= 0"
+                [class.calc-unit--loss]="profitPerUnit() < 0">
+                <span class="calc-unit-label calc-unit-label--inline-help">
+                  <span class="calc-label-text">Lucro por peça</span>
+                </span>
+                <strong class="calc-unit-value">{{ formatCurrency(profitPerUnit()) }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloco 2: totais (primário) -->
+          <div class="calc-block calc-block--totals calc-block--primary">
+            <h4 class="calc-block-title">Totais</h4>
+            <p class="calc-block-hint">Com base na quantidade de peças informada</p>
+            <div class="calc-breakdown">
+              <div class="calc-item calc-item--total">
+                <span class="calc-item-label calc-item-label--with-help">
+                  <span>Custo total</span>
+                  <button type="button" class="calc-help-btn" (click)="openCalcHelpModal(); $event.stopPropagation()"
+                    data-tooltip="Como calculamos isso?" aria-label="Como calculamos isso?">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                      <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                  </button>
+                </span>
+                <span class="calc-item-value">{{ formatCurrency(totalsForDisplay().totalCost) }}</span>
+              </div>
+              <p class="calc-totals-explain">
+                Baseado no custo total dividido pela quantidade
+              </p>
+              @if (totalsForDisplay().feeAmt > 0) {
+                <div class="calc-item calc-item--deduction">
+                  <span class="calc-item-label">Taxa marketplace</span>
+                  <span class="calc-item-value calc-item-value--negative">− {{ formatCurrency(totalsForDisplay().feeAmt) }}</span>
+                </div>
+              }
+              @if (totalsForDisplay().freight > 0) {
+                <div class="calc-item calc-item--deduction">
+                  <span class="calc-item-label">Frete</span>
+                  <span class="calc-item-value calc-item-value--negative">− {{ formatCurrency(totalsForDisplay().freight) }}</span>
+                </div>
+              }
+              <div class="calc-item"
+                [class.calc-item--profit]="totalsForDisplay().profit >= 0"
+                [class.calc-item--loss]="totalsForDisplay().profit < 0">
+                <span class="calc-item-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                    <polyline points="17 6 23 6 23 12"/>
+                  </svg>
+                  Lucro total
+                </span>
+                <strong class="calc-item-value">{{ formatCurrency(totalsForDisplay().profit) }}</strong>
+              </div>
+              <p class="calc-profit-formula">
+                ({{ formatCurrency(totalsForDisplay().totalRevenue) }} vendas
+                − {{ formatCurrency(totalsForDisplay().totalCost) }} custos
+                @if (totalsForDisplay().feeAmt > 0) {
+                  − {{ formatCurrency(totalsForDisplay().feeAmt) }} taxas
+                }
+                @if (totalsForDisplay().freight > 0) {
+                  − {{ formatCurrency(totalsForDisplay().freight) }} frete
+                }
+                )
+              </p>
+              <div [class]="'calc-item calc-item--margin ' + marginClassForTotals()">
+                <span class="calc-item-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6"  y1="20" x2="6"  y2="14"/>
+                  </svg>
+                  Margem de lucro
+                </span>
+                <span class="calc-item-value margin-pill">{{ totalsForDisplay().margin | number:'1.1-1' }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detalhes: energia + material -->
+          <details class="calc-details">
+            <summary class="calc-details-summary">Detalhes do custo</summary>
+            <div class="calc-details-body">
+              <div class="calc-item">
+                <span class="calc-item-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                  Custo de energia
+                </span>
+                <span class="calc-item-value">{{ formatCurrency(energyCost()) }}</span>
+              </div>
+              <div class="calc-item">
+                <span class="calc-item-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  </svg>
+                  Custo de material
+                </span>
+                <span class="calc-item-value">{{ formatCurrency(materialCost()) }}</span>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-cancel" type="button" (click)="requestClose()" [disabled]="isSaving()">
+            Cancelar
+          </button>
+          <button class="btn-save" type="submit" [disabled]="form.invalid || isSaving()">
+            @if (isSaving()) {
+              <span class="btn-spinner" aria-hidden="true"></span>
+              Salvando…
+            } @else {
+              {{ isEditMode() ? 'Atualizar' : 'Registrar Produção' }}
+            }
+          </button>
+        </div>
+
+      </form>
+      </div><!-- /modal-blurred -->
+
+      @if (showCalcHelpModal()) {
+        <div class="calc-help-overlay" (click)="closeCalcHelpModal()" role="presentation">
+          <div class="calc-help-dialog" role="dialog" aria-modal="true" aria-labelledby="calc-help-title"
+            (click)="$event.stopPropagation()">
+            <div class="calc-help-header">
+              <h2 id="calc-help-title" class="calc-help-title">Como calculamos</h2>
+              <button type="button" class="calc-help-close" (click)="closeCalcHelpModal()" aria-label="Fechar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="calc-help-body">
+              <section class="calc-help-section">
+                <h3 class="calc-help-section-title">Custo de material</h3>
+                <p class="calc-help-p">Baseado no peso da peça e no preço do filamento.</p>
+              </section>
+              <section class="calc-help-section">
+                <h3 class="calc-help-section-title">Custo de energia</h3>
+                <p class="calc-help-p">Baseado no tempo de impressão e no custo por hora da impressora.</p>
+              </section>
+              <section class="calc-help-section">
+                <h3 class="calc-help-section-title">Custo total</h3>
+                <p class="calc-help-p">Soma do custo de material + energia.</p>
+              </section>
+              <section class="calc-help-section">
+                <h3 class="calc-help-section-title">Lucro</h3>
+                <p class="calc-help-p">Preço de venda menos o custo total.</p>
+              </section>
+              <div class="calc-help-example">
+                <p class="calc-help-example-title">Exemplo</p>
+                <ul class="calc-help-example-list">
+                  <li><span class="calc-help-k">Preço</span> R$ 20,69</li>
+                  <li><span class="calc-help-k">Custo</span> R$ 8,28</li>
+                  <li><span class="calc-help-k">Lucro</span> R$ 12,41</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

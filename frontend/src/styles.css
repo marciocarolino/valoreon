@@ -1,0 +1,113 @@
+/* ══════════════════════════════════════════════════
+   Global Design Tokens — dark mode default
+   Components must NOT redefine these in :host {}
+   Override per-theme in body.light below
+══════════════════════════════════════════════════ */
+:root {
+  /* Brand (same in both themes) */
+  --accent:          #6366f1;
+  --accent-light:    #818cf8;
+  --accent-dark:     #4f46e5;
+  --purple:          #8b5cf6;
+  --primary-600:     #4f46e5;
+  --primary-700:     #4338ca;
+
+  /* Backgrounds */
+  --bg-surface:      #1e1e2f;
+  --bg-base:         #07071a;
+  --bg-sidebar:      #0b0b1f;
+  --bg-topbar:       rgba(11, 11, 31, 0.88);
+  --bg-card:         rgba(255, 255, 255, 0.038);
+  --bg-input:        rgba(255, 255, 255, 0.038);
+  --bg-input-hover:  rgba(255, 255, 255, 0.06);
+  --bg-subtle:       rgba(255, 255, 255, 0.03);
+
+  /* Borders */
+  --border:          rgba(255, 255, 255, 0.07);
+  --border-card:     rgba(255, 255, 255, 0.09);
+  --border-dashed:   rgba(255, 255, 255, 0.1);
+  --border-focus:    rgba(99, 102, 241, 0.65);
+  --border-error:    rgba(239, 68, 68, 0.55);
+
+  /* Text */
+  --text-primary:    #f3f4f6;
+  --text-secondary:  rgba(255, 255, 255, 0.45);
+  --text-muted:      rgba(255, 255, 255, 0.22);
+
+  /* Shadows */
+  --shadow-card:     0 0 0 1px rgba(255, 255, 255, 0.025) inset, 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-topbar:   none;
+  --shadow-sidebar:  none;
+
+  /* Nav interaction */
+  --nav-hover-bg:    rgba(255, 255, 255, 0.055);
+  --card-hover-border: rgba(255, 255, 255, 0.14);
+}
+
+/* ══════════════════════════════════════════════════
+   Light mode overrides
+══════════════════════════════════════════════════ */
+body.light {
+  /* Backgrounds */
+  --bg-surface:      #ffffff;
+  --bg-base:         #f3f4f6;
+  --bg-sidebar:      #ffffff;
+  --bg-topbar:       rgba(255, 255, 255, 0.95);
+  --bg-card:         #ffffff;
+  --bg-input:        #f8fafc;
+  --bg-input-hover:  #f1f5f9;
+  --bg-subtle:       #f1f5f9;
+
+  /* Borders */
+  --border:          #e5e7eb;
+  --border-card:     #e2e8f0;
+  --border-dashed:   #cbd5e1;
+  --border-focus:    rgba(79, 70, 229, 0.5);
+  --border-error:    rgba(239, 68, 68, 0.45);
+
+  /* Text */
+  --text-primary:    #0f172a;
+  --text-secondary:  #64748b;
+  --text-muted:      #94a3b8;
+
+  /* Shadows */
+  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-topbar:   0 1px 0 #e5e7eb;
+  --shadow-sidebar:  1px 0 0 #e5e7eb, 4px 0 20px rgba(0, 0, 0, 0.04);
+
+  /* Nav interaction */
+  --nav-hover-bg:      rgba(0, 0, 0, 0.04);
+  --card-hover-border: #c7d2fe;
+}
+
+/* ── Reset & Base ─────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* dark/light color-scheme hints for native controls */
+body.dark  { color-scheme: dark; }
+body.light { color-scheme: light; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button, input, textarea, select { font-family: inherit; font-size: inherit; }

@@ -1,0 +1,758 @@
+<div class="page-header">
+
+  <div>
+
+    <h1 class="page-title">Manutenção</h1>
+
+    <p class="page-sub">Registre e acompanhe a manutenção das suas impressoras</p>
+
+  </div>
+
+  <button class="btn-new" type="button" (click)="openModal()" [disabled]="modalOpen()">
+
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+
+      stroke-linejoin="round" aria-hidden="true">
+
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+
+    </svg>
+
+    Registrar manutenção
+
+  </button>
+
+</div>
+
+@if (toastMessage()) {
+  <div
+    class="toast"
+    [class.toast--error]="!toastSuccess()"
+    [class.toast--success]="toastSuccess()"
+    role="alert"
+    aria-live="assertive"
+  >
+    @if (toastSuccess()) {
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    } @else {
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    }
+    <span>{{ toastMessage() }}</span>
+    <button class="toast-close" type="button" (click)="dismissToast()" aria-label="Fechar">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+}
+
+@if (isLoading()) {
+
+  <div class="list-feedback">
+
+    <span class="list-spinner" aria-label="Carregando"></span>
+
+    <p>Carregando manutenções…</p>
+
+  </div>
+
+}
+
+
+
+@if (listError()) {
+
+  <div class="alert-banner alert-error" role="alert">
+
+    {{ listError() }}
+
+    <button class="retry-btn" type="button" (click)="loadMaintenances()">Tentar novamente</button>
+
+  </div>
+
+}
+
+
+
+@if (!isLoading() && !listError()) {
+
+  <div class="list-toolbar">
+
+    <label class="filter-label" for="mt-printer-filter">Impressora</label>
+
+    <app-dropdown
+
+      inputId="mt-printer-filter"
+
+      [options]="printerFilterOptions()"
+
+      [ngModel]="selectedPrinterId()"
+
+      (ngModelChange)="onPrinterFilterChange($event)"
+
+      ariaLabel="Filtrar por impressora"
+
+      placeholder="Todas"
+
+      [block]="false"
+
+    />
+
+  </div>
+
+
+
+  <div class="mt-tabs" role="tablist" aria-label="Visão de manutenção">
+
+    <button
+
+      type="button"
+
+      class="mt-tab"
+
+      role="tab"
+
+      [class.mt-tab--active]="activeTab() === 'active'"
+
+      [attr.aria-selected]="activeTab() === 'active'"
+
+      id="mt-tab-active"
+
+      aria-controls="mt-panel-active"
+
+      (click)="setTab('active')"
+
+    >
+
+      Em manutenção
+
+    </button>
+
+    <button
+
+      type="button"
+
+      class="mt-tab"
+
+      role="tab"
+
+      [class.mt-tab--active]="activeTab() === 'history'"
+
+      [attr.aria-selected]="activeTab() === 'history'"
+
+      id="mt-tab-history"
+
+      aria-controls="mt-panel-history"
+
+      (click)="setTab('history')"
+
+    >
+
+      Histórico
+
+    </button>
+
+  </div>
+
+
+
+  @if (activeTab() === 'active') {
+
+    <div
+
+      id="mt-panel-active"
+
+      role="tabpanel"
+
+      aria-labelledby="mt-tab-active"
+
+      class="mt-panel"
+
+    >
+
+      @if (openItems().length === 0) {
+
+        <div class="empty-state empty-state--muted">
+
+          <p class="empty-title">Nenhuma impressora em manutenção</p>
+
+        </div>
+
+      } @else {
+
+        <div class="table-wrap table-wrap--active">
+
+          <div class="table-container">
+
+            <table class="mt-table" aria-label="Manutenções em andamento">
+
+              <thead>
+
+                <tr>
+
+                  <th scope="col">Impressora</th>
+
+                  <th scope="col">Tipo</th>
+
+                  <th scope="col" class="col-date">Início</th>
+
+                  <th scope="col" class="col-status">Status</th>
+
+                  <th scope="col" class="col-actions">Ações</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                @for (m of openItems(); track m.id) {
+
+                  <tr class="mt-row mt-row--active">
+
+                    <td class="cell-printer">{{ printerLabel(m) }}</td>
+
+                    <td>{{ typeLabel(m.type) }}</td>
+
+                    <td class="col-date">{{ startDisplay(m) }}</td>
+
+                    <td class="col-status">
+
+                      <span class="mt-badge mt-badge--open" title="Em andamento">
+
+                        <span class="mt-badge__dot" aria-hidden="true">🔴</span>
+
+                        Em manutenção
+
+                      </span>
+
+                    </td>
+
+                    <td class="col-actions">
+
+                      <button
+
+                        type="button"
+
+                        class="btn-finalize"
+
+                        (click)="finalize(m)"
+
+                        [disabled]="finalizingId() === m.id"
+
+                      >
+
+                        @if (finalizingId() === m.id) {
+
+                          <span class="btn-finalize__spinner" aria-hidden="true"></span>
+
+                          Finalizando…
+
+                        } @else {
+
+                          Finalizar manutenção
+
+                        }
+
+                      </button>
+
+                    </td>
+
+                  </tr>
+
+                }
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+
+
+  @if (activeTab() === 'history') {
+
+    <div
+
+      id="mt-panel-history"
+
+      role="tabpanel"
+
+      aria-labelledby="mt-tab-history"
+
+      class="mt-panel"
+
+    >
+
+      @if (historyItems().length === 0) {
+
+        <div class="empty-state empty-state--muted">
+
+          <p class="empty-title">Nenhuma manutenção registrada ainda</p>
+
+        </div>
+
+      } @else {
+
+        <div class="table-wrap table-wrap--history">
+
+          <div class="table-container">
+
+            <table class="mt-table mt-table--history" aria-label="Histórico de manutenções">
+
+              <thead>
+
+                <tr>
+
+                  <th scope="col">Impressora</th>
+
+                  <th scope="col">Tipo</th>
+
+                  <th scope="col" class="col-date">Início</th>
+
+                  <th scope="col" class="col-date">Fim</th>
+
+                  <th scope="col" class="col-duration">Duração</th>
+
+                  <th scope="col" class="col-cost">Custo</th>
+
+                  <th scope="col" class="col-status">Status</th>
+
+                  <th scope="col" class="col-details">Detalhes</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                @for (m of historyItems(); track m.id) {
+
+                  <tr class="mt-row mt-row--history">
+
+                    <td class="cell-printer cell-printer--muted">{{ printerLabel(m) }}</td>
+
+                    <td class="cell-muted">{{ typeLabel(m.type) }}</td>
+
+                    <td class="col-date cell-muted">{{ startDisplay(m) }}</td>
+
+                    <td class="col-date cell-muted">{{ endDisplay(m) }}</td>
+
+                    <td class="col-duration cell-muted">{{ durationDisplay(m) }}</td>
+
+                    <td class="col-cost cell-cost--muted">{{ formatCurrency(m.cost) }}</td>
+
+                    <td class="col-status">
+
+                      <span class="mt-badge mt-badge--done" title="Concluída">
+
+                        <span class="mt-badge__dot" aria-hidden="true">🟢</span>
+
+                        Finalizada
+
+                      </span>
+
+                    </td>
+
+                    <td class="col-details">
+
+                      <button
+
+                        type="button"
+
+                        class="btn-details"
+
+                        (click)="openDetails(m.id)"
+
+                        [disabled]="detailsLoading() || isMaintenanceInProgress(m)"
+
+                        [attr.aria-busy]="detailsLoading() ? 'true' : null"
+
+                      >
+
+                        Detalhes
+
+                      </button>
+
+                    </td>
+
+                  </tr>
+
+                }
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+}
+
+
+
+@if (modalOpen()) {
+
+  <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="mt-modal-title"
+
+    (click)="onOverlayClick($event)">
+
+    <div class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+
+        <h2 class="modal-title" id="mt-modal-title">Registrar manutenção</h2>
+
+        <button class="modal-close" type="button" (click)="closeModal()" [disabled]="isSaving()"
+
+          aria-label="Fechar">
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+
+            fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"
+
+            stroke-linejoin="round" aria-hidden="true">
+
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+
+          </svg>
+
+        </button>
+
+      </div>
+
+
+
+      @if (formError()) {
+
+        <div class="alert-banner alert-error" role="alert">{{ formError() }}</div>
+
+      }
+
+
+
+      <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+
+        <div class="field">
+
+          <label class="field-label" for="mt-printer">Impressora</label>
+
+          <app-dropdown
+
+            inputId="mt-printer"
+
+            formControlName="printerId"
+
+            [options]="printerModalOptions()"
+
+            placeholder="Selecione uma impressora…"
+
+            [invalid]="form.controls.printerId.invalid && form.controls.printerId.touched"
+
+          />
+
+          @if (form.controls.printerId.invalid && form.controls.printerId.touched) {
+
+            <span class="field-hint field-hint--error">Selecione uma impressora</span>
+
+          }
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label class="field-label" for="mt-type">Tipo</label>
+
+          <app-dropdown
+
+            inputId="mt-type"
+
+            formControlName="type"
+
+            [options]="typeOptions"
+
+            placeholder="Selecione o tipo…"
+
+            [invalid]="form.controls.type.invalid && form.controls.type.touched"
+
+          />
+
+          @if (form.controls.type.invalid && form.controls.type.touched) {
+
+            <span class="field-hint field-hint--error">Tipo é obrigatório</span>
+
+          }
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label class="field-label" for="mt-desc">Descrição</label>
+
+          <textarea id="mt-desc" class="field-textarea" formControlName="description" rows="3"
+
+            placeholder="O que foi feito?"
+
+            [class.is-invalid]="form.controls.description.invalid && form.controls.description.touched"></textarea>
+
+          @if (form.controls.description.invalid && form.controls.description.touched) {
+
+            <span class="field-hint field-hint--error">Informe a descrição (mín. 2 caracteres)</span>
+
+          }
+
+        </div>
+
+
+
+        <div class="fields-row">
+
+          <div class="field">
+
+            <label class="field-label" for="mt-cost">Custo (R$)</label>
+
+            <input id="mt-cost" class="field-input" type="number" formControlName="cost"
+
+              placeholder="0,00" step="0.01" min="0"
+
+              [class.is-invalid]="form.controls.cost.invalid && form.controls.cost.touched">
+
+            @if (form.controls.cost.invalid && form.controls.cost.touched) {
+
+              <span class="field-hint field-hint--error">Informe o custo</span>
+
+            }
+
+          </div>
+
+          <div class="field">
+
+            <label class="field-label" for="mt-date">Data</label>
+
+            <input id="mt-date" class="field-input" type="date" formControlName="date"
+
+              [class.is-invalid]="form.controls.date.invalid && form.controls.date.touched">
+
+            @if (form.controls.date.invalid && form.controls.date.touched) {
+
+              <span class="field-hint field-hint--error">Informe a data</span>
+
+            }
+
+          </div>
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label class="field-label" for="mt-notes">Observações</label>
+
+          <textarea id="mt-notes" class="field-textarea" formControlName="notes" rows="2"
+
+            placeholder="Opcional"></textarea>
+
+        </div>
+
+
+
+        <div class="modal-actions">
+
+          <button class="btn-cancel" type="button" (click)="closeModal()" [disabled]="isSaving()">
+
+            Cancelar
+
+          </button>
+
+          <button class="btn-save" type="submit" [disabled]="form.invalid || isSaving()">
+
+            @if (isSaving()) {
+
+              <span class="btn-spinner" aria-hidden="true"></span>
+
+              Salvando…
+
+            } @else {
+
+              Salvar
+
+            }
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+}
+
+@if (detailsOpen() && detailsMaintenance(); as dm) {
+
+  <div
+
+    class="modal-overlay modal-overlay--details"
+
+    role="dialog"
+
+    aria-modal="true"
+
+    aria-labelledby="mt-details-title"
+
+    (click)="onDetailsOverlayClick($event)"
+
+  >
+
+    <div class="modal-card modal-card--details" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+
+        <h2 class="modal-title" id="mt-details-title">Detalhes da manutenção</h2>
+
+        <button
+
+          class="modal-close"
+
+          type="button"
+
+          (click)="closeDetails()"
+
+          aria-label="Fechar"
+
+        >
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+
+            fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"
+
+            stroke-linejoin="round" aria-hidden="true">
+
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+
+          </svg>
+
+        </button>
+
+      </div>
+
+      <dl class="details-dl">
+
+        <dt>Impressora</dt>
+
+        <dd>{{ printerLabel(dm) }}</dd>
+
+        <dt>Tipo</dt>
+
+        <dd>{{ typeLabel(dm.type) }}</dd>
+
+        <dt>
+
+          <label class="details-field-label" for="mt-details-description">Description</label>
+
+        </dt>
+
+        <dd class="details-description-cell">
+
+          <p id="mt-details-description" class="details-description">
+
+            {{ dm.description?.trim() ? dm.description : 'No description provided' }}
+
+          </p>
+
+        </dd>
+
+        <dt>Início</dt>
+
+        <dd>{{ startDisplay(dm) }}</dd>
+
+        <dt>Fim</dt>
+
+        <dd>{{ endDisplay(dm) }}</dd>
+
+        <dt>Duração</dt>
+
+        <dd>{{ durationDisplay(dm) }}</dd>
+
+        <dt>Custo</dt>
+
+        <dd>{{ formatCurrency(dm.cost) }}</dd>
+
+        <dt>Status</dt>
+
+        <dd>
+
+          @if (isMaintenanceInProgress(dm)) {
+
+            <span class="mt-badge mt-badge--open">
+
+              <span class="mt-badge__dot" aria-hidden="true">🔴</span>
+
+              {{ statusLabelForDetails(dm) }}
+
+            </span>
+
+          } @else {
+
+            <span class="mt-badge mt-badge--done">
+
+              <span class="mt-badge__dot" aria-hidden="true">🟢</span>
+
+              {{ statusLabelForDetails(dm) }}
+
+            </span>
+
+          }
+
+        </dd>
+
+      </dl>
+
+      <div class="modal-actions modal-actions--details">
+
+        <button class="btn-cancel" type="button" (click)="closeDetails()">Fechar</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+}
+

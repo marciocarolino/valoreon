@@ -1,0 +1,61 @@
+<div
+  class="app-dropdown"
+  [class.app-dropdown--open]="open()"
+  [class.app-dropdown--invalid]="invalid()"
+  [class.app-dropdown--block]="block()"
+  [class.app-dropdown--inline]="!block()"
+>
+  <button
+    type="button"
+    class="app-dropdown__trigger"
+    [id]="inputId() || null"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-expanded]="open()"
+    [attr.aria-haspopup]="'listbox'"
+    [disabled]="isDisabled()"
+    (click)="toggle($event)"
+  >
+    @if (pending()) {
+      <span class="app-dropdown__spinner" aria-hidden="true"></span>
+    }
+    <span class="app-dropdown__value">{{ displayLabel() }}</span>
+    <svg
+      class="app-dropdown__chevron"
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  </button>
+
+  @if (open()) {
+    <ul class="app-dropdown__list" role="listbox">
+      @for (opt of options(); track trackOpt($index, opt)) {
+        <li
+          class="app-dropdown__item"
+          [class.app-dropdown__item--selected]="isSelected(opt)"
+          [class.app-dropdown__item--disabled]="opt.disabled"
+          role="option"
+          [attr.aria-selected]="isSelected(opt)"
+          [attr.aria-disabled]="opt.disabled === true"
+          (click)="select(opt, $event)"
+        >
+          @if (isSelected(opt)) {
+            <span class="app-dropdown__check" aria-hidden="true">✔</span>
+          } @else {
+            <span class="app-dropdown__check app-dropdown__check--spacer" aria-hidden="true"></span>
+          }
+          <span class="app-dropdown__item-label">{{ opt.label }}</span>
+        </li>
+      }
+    </ul>
+  }
+</div>

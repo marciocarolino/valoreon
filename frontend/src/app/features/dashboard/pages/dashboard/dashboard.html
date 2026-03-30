@@ -1,0 +1,476 @@
+<!-- ═══════════════════════════════════════
+     Header inteligente
+═══════════════════════════════════════ -->
+<div class="dash-header">
+  <div class="dash-greeting">
+    <span class="greeting-emoji" aria-hidden="true">{{ headerEmoji }}</span>
+    <div class="greeting-text">
+      <h1 class="greeting-title">{{ headerMessage }}</h1>
+      <p class="greeting-sub">{{ headerSub }}</p>
+    </div>
+  </div>
+
+  <div class="header-actions" aria-label="Ações rápidas">
+    @if (streakDays() > 0) {
+      <div class="header-streak">
+        <span class="streak-badge" [class.streak-hot]="streakDays() >= 3"
+          title="Você acessou o sistema por {{ streakDays() }} dias seguidos!">
+          🔥 {{ streakMessage }}
+          @if (streakDays() < 3) { <span class="streak-hint">— continue amanhã!</span> }
+        </span>
+      </div>
+    }
+
+    @if (!hasProductionToday()) {
+      <div class="header-cta">
+        <a class="cta-header-btn" routerLink="/producao"
+          title="Criar nova produção"
+          aria-label="Criar nova produção">
+          <span class="cta-header-btn__icon" aria-hidden="true">+</span>
+          Nova produção
+        </a>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ═══ Error ═══ -->
+@if (error()) {
+  <div class="alert-error" role="alert">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error() }}
+  </div>
+}
+
+<!-- ═══════════════════════════════════════
+     Skeleton loading
+═══════════════════════════════════════ -->
+@if (isLoading()) {
+  <div class="stats-grid">
+    <div class="skeleton-card"><div class="sk-line sk-sm"></div><div class="sk-line sk-lg"></div><div class="sk-line sk-xs"></div></div>
+    <div class="skeleton-card"><div class="sk-line sk-sm"></div><div class="sk-line sk-lg"></div><div class="sk-line sk-xs"></div></div>
+    <div class="skeleton-card"><div class="sk-line sk-sm"></div><div class="sk-line sk-lg"></div><div class="sk-line sk-xs"></div></div>
+    <div class="skeleton-card"><div class="sk-line sk-sm"></div><div class="sk-line sk-lg"></div><div class="sk-line sk-xs"></div></div>
+  </div>
+}
+
+@if (!isLoading() && !error()) {
+
+  <!-- ═══ Alerta de prejuízo (prioridade máxima) ═══ -->
+  @if (showNegativeProfitCta) {
+    <div class="loss-cta">
+      <div class="loss-cta__body">
+        <p class="loss-cta__title">Você está operando no prejuízo</p>
+        <p class="loss-cta__desc">Revise seus preços ou custos para voltar ao lucro</p>
+      </div>
+      <a class="loss-cta__btn" routerLink="/producao">Corrigir preços</a>
+    </div>
+  }
+
+  <!-- ═══ Alerta de margem baixa ═══ -->
+  @if (showLowMarginAlert) {
+    <div class="margin-alert">
+      <div class="margin-alert__icon">⚠️</div>
+      <div class="margin-alert__content">
+        <p class="margin-alert__title">Você pode estar perdendo dinheiro</p>
+        <p class="margin-alert__desc">Sua margem média está abaixo de 30%. Revise os preços das suas produções.</p>
+      </div>
+      <a class="margin-alert__cta" routerLink="/producao">Revisar preços</a>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════
+       Lucro de hoje
+  ═══════════════════════════════════════ -->
+  @if (todayLoaded()) {
+    <div class="today-card"
+      [class.today-card--positive]="todayProfit() > 0"
+      [class.today-card--negative]="todayProfit() < 0">
+      <div class="today-card__header">
+        <span class="today-card__icon" aria-hidden="true">💰</span>
+        <div>
+          <p class="today-card__title">Seu lucro hoje</p>
+          <p class="today-card__count">
+            {{ todayProductions() }} {{ todayProductions() === 1 ? 'produção' : 'produções' }}
+          </p>
+        </div>
+      </div>
+      <p class="today-card__value">{{ fmt(todayProfit()) }}</p>
+      <p class="today-card__message">
+        @if (todayProfit() > 0) { Bom trabalho hoje 👏 }
+        @else if (todayProfit() < 0) { Hoje você está no prejuízo ⚠️ }
+        @else { Nenhuma venda hoje ainda }
+      </p>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════
+       KPI Cards (Lucro em destaque = primeiro)
+  ═══════════════════════════════════════ -->
+  <div class="stats-grid">
+
+    <!-- Lucro — posição 1, destaque máximo -->
+    <div class="stat-card stat-card--featured" [class.stat-card--profit-glow]="profitPositive" style="--card-accent:#22c55e">
+      <div class="stat-top">
+        <span class="stat-label">Seu ganho real</span>
+        <span class="stat-dot" aria-hidden="true"></span>
+      </div>
+      <p class="stat-value stat-value--profit">{{ fmt(profit()) }}</p>
+      <p class="stat-formula">
+        <span class="stat-formula__hint">Total vendido − custos</span>
+        <span class="stat-formula__nums">({{ fmt(revenue()) }} − {{ fmt(costs()) }})</span>
+      </p>
+      <p class="stat-sub">
+        @if (prints() === 0) { Nenhuma produção ainda } @else { O que sobra depois de descontar os gastos }
+      </p>
+    </div>
+
+    <!-- Total vendido -->
+    <div class="stat-card stat-card--secondary" style="--card-accent:#6366f1">
+      <div class="stat-top">
+        <span class="stat-label">Total vendido</span>
+        <span class="stat-dot" aria-hidden="true"></span>
+      </div>
+      <p class="stat-value">{{ fmt(revenue()) }}</p>
+      <p class="stat-sub">
+        @if (prints() === 0) { Nenhuma produção ainda } @else { Soma do que você faturou nas vendas }
+      </p>
+    </div>
+
+    <!-- Custos -->
+    <div class="stat-card stat-card--secondary" style="--card-accent:#ef4444">
+      <div class="stat-top">
+        <span class="stat-label">Quanto você gastou</span>
+        <span class="stat-dot" aria-hidden="true"></span>
+      </div>
+      <p class="stat-value">{{ fmt(costs()) }}</p>
+      <p class="stat-sub">
+        @if (prints() === 0) { Nenhuma produção ainda } @else { Custos de material, energia e similares }
+      </p>
+    </div>
+
+    <!-- Produções (contagem) ou peças (soma de quantidades), conforme API -->
+    <div class="stat-card stat-card--secondary" style="--card-accent:#8b5cf6">
+      <div class="stat-top">
+        <span class="stat-label">
+          {{ productionKpiIsPieces ? 'Peças produzidas' : 'Produções registradas' }}
+        </span>
+        <span class="stat-dot" aria-hidden="true"></span>
+      </div>
+      <p class="stat-value">{{ productionKpiValue }}</p>
+      <p class="stat-sub">
+        @if (prints() === 0) {
+          Nenhuma produção ainda
+        } @else if (productionKpiIsPieces) {
+          Você produziu {{ productionKpiValue }} peças no total
+        } @else {
+          {{ productionKpiValue }} {{ productionKpiValue === 1 ? 'produção registrada' : 'produções registradas' }}
+        }
+      </p>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       Progresso semanal
+  ═══════════════════════════════════════ -->
+  @if (weeklyStats().productions > 0 || weeklyStats().profit > 0) {
+    <div class="section-label">Seu desempenho nos {{ periodLabel }}</div>
+    <div class="weekly-row">
+      <div class="weekly-card">
+        <span class="weekly-icon">🏭</span>
+        <div>
+          <p class="weekly-value">{{ weeklyStats().productions }}</p>
+          <p class="weekly-label">{{ weeklyStats().productions === 1 ? 'produção' : 'produções' }} nos últimos {{ selectedDays() }} dias</p>
+        </div>
+      </div>
+      <div class="weekly-card">
+        <span class="weekly-icon">💰</span>
+        <div>
+          <p class="weekly-value">{{ fmt(weeklyStats().profit) }}</p>
+          <p class="weekly-label">seu lucro nos últimos {{ selectedDays() }} dias</p>
+        </div>
+      </div>
+      @if (weeklyGrowth !== null) {
+        <div class="weekly-card" [class.weekly-card--up]="weeklyGrowth! >= 0" [class.weekly-card--down]="weeklyGrowth! < 0">
+          <span class="weekly-icon">{{ weeklyGrowth! >= 0 ? '📈' : '📉' }}</span>
+          <div>
+            <p class="weekly-value weekly-value--growth">{{ weeklyGrowth! >= 0 ? '+' : '' }}{{ weeklyGrowth }}%</p>
+            <p class="weekly-label">vs semana passada</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════
+       Filtro de período
+  ═══════════════════════════════════════ -->
+  <div class="period-filter" role="group" aria-label="Filtrar por período">
+    <button class="period-btn" [class.period-btn--active]="selectedDays() === 7"  (click)="selectDays(7)">7 dias</button>
+    <button class="period-btn" [class.period-btn--active]="selectedDays() === 15" (click)="selectDays(15)">15 dias</button>
+    <button class="period-btn" [class.period-btn--active]="selectedDays() === 30" (click)="selectDays(30)">30 dias</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       Receita + produção
+  ═══════════════════════════════════════ -->
+  <div class="charts-container">
+    <div class="chart-card">
+      <h3 class="chart-card__title">Receita</h3>
+      <div class="chart-card__canvas-wrap">
+        <canvas id="revenueChart" aria-label="Evolução da receita na semana"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-card__title">Peças produzidas por dia</h3>
+      <div class="chart-card__canvas-wrap">
+        <canvas id="productionChart" aria-label="Volume de produção na semana"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       Ranking de impressoras por lucro
+  ═══════════════════════════════════════ -->
+  @if (bestPrinter()) {
+    <div class="section-label">Desempenho por impressora</div>
+    <div class="printer-profit-row">
+
+      <div class="printer-profit-card printer-profit-card--best">
+        <div class="pp-icon" aria-hidden="true">🏆</div>
+        <div class="pp-body">
+          <p class="pp-label">Mais lucrativa</p>
+          <p class="pp-name">{{ bestPrinter()!.printerName }}</p>
+          <p class="pp-profit" [class.pp-profit--positive]="bestPrinter()!.totalProfit >= 0"
+                               [class.pp-profit--negative]="bestPrinter()!.totalProfit < 0">
+            {{ fmt(bestPrinter()!.totalProfit) }}
+          </p>
+          <p class="pp-detail">
+            Receita {{ fmt(bestPrinter()!.totalRevenue) }} · Custo {{ fmt(bestPrinter()!.totalCost) }}
+          </p>
+        </div>
+      </div>
+
+      @if (worstPrinter()) {
+        <div class="printer-profit-card printer-profit-card--worst">
+          <div class="pp-icon" aria-hidden="true">{{ worstPrinter()!.totalProfit < 0 ? '🔻' : '⚠️' }}</div>
+          <div class="pp-body">
+            <p class="pp-label">{{ worstPrinter()!.totalProfit < 0 ? 'Com prejuízo' : 'Menor desempenho' }}</p>
+            <p class="pp-name">{{ worstPrinter()!.printerName }}</p>
+            <p class="pp-profit" [class.pp-profit--positive]="worstPrinter()!.totalProfit >= 0"
+                                 [class.pp-profit--negative]="worstPrinter()!.totalProfit < 0">
+              {{ fmt(worstPrinter()!.totalProfit) }}
+            </p>
+            <p class="pp-detail">
+              Receita {{ fmt(worstPrinter()!.totalRevenue) }} · Custo {{ fmt(worstPrinter()!.totalCost) }}
+            </p>
+          </div>
+        </div>
+      }
+
+    </div>
+
+    @if (hasEnoughPrinters()) {
+      @if (printersProfit().length > 10) {
+        <p class="chart-hint">Exibindo Top 5 e piores 5 impressoras por desempenho</p>
+      }
+      <div class="profit-chart-wrap">
+        <canvas id="profitChart" aria-label="Lucro por impressora"></canvas>
+      </div>
+    } @else {
+      <div class="profit-chart-empty">
+        <p>Adicione mais impressoras para visualizar o comparativo de desempenho.</p>
+      </div>
+    }
+  }
+
+  <!-- ═══════════════════════════════════════
+       Status das Impressoras
+  ═══════════════════════════════════════ -->
+  <div class="section-label">Status das Impressoras</div>
+  <div class="printers-grid">
+
+    <div class="stat-card" style="--card-accent:#22c55e">
+      <div class="stat-top">
+        <span class="stat-label">Ativas</span>
+        <span class="stat-dot" aria-hidden="true"></span>
+      </div>
+      <p class="stat-value">{{ activePrinters() }}</p>
+      <p class="stat-sub">em operação agora</p>
+    </div>
+
+    <div class="stat-card" style="--card-accent:#ef4444">
+      <div class="stat-top">
+        <span class="stat-label">Inativas</span>
+        <span class="stat-dot" aria-hidden="true"></span>
+      </div>
+      <p class="stat-value">{{ inactivePrinters() }}</p>
+      <p class="stat-sub">desligadas</p>
+    </div>
+
+    <div class="stat-card" style="--card-accent:#f59e0b">
+      <div class="stat-top">
+        <span class="stat-label">Manutenção</span>
+        <span class="stat-dot" aria-hidden="true"></span>
+      </div>
+      <p class="stat-value">{{ maintenancePrinters() }}</p>
+      <p class="stat-sub">em reparo</p>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       Monetização — "Em breve" evoluído
+  ═══════════════════════════════════════ -->
+  <div class="section-label">Desbloquear mais</div>
+  <div class="coming-soon-grid">
+
+    <div class="soon-card">
+      <span class="soon-icon">📊</span>
+      <div class="soon-text">
+        <p class="soon-title">Projeção Mensal</p>
+        <p class="soon-desc">Estime seu faturamento do mês</p>
+      </div>
+      <button class="soon-unlock-btn" (click)="openProModal()">Desbloquear</button>
+    </div>
+
+    <div class="soon-card">
+      <span class="soon-icon">🧮</span>
+      <div class="soon-text">
+        <p class="soon-title">Simulador de Lucro</p>
+        <p class="soon-desc">Teste cenários antes de precificar</p>
+      </div>
+      <button class="soon-unlock-btn" (click)="openProModal()">Desbloquear</button>
+    </div>
+
+    <div class="soon-card">
+      <span class="soon-icon">📄</span>
+      <div class="soon-text">
+        <p class="soon-title">Relatório Avançado</p>
+        <p class="soon-desc">Exporte dados e gere insights</p>
+      </div>
+      <button class="soon-unlock-btn" (click)="openProModal()">Desbloquear</button>
+    </div>
+
+  </div>
+
+}
+
+<!-- ═══ Empty state ═══ -->
+@if (!isLoading() && !error() && prints() === 0) {
+  <div class="empty-section">
+    <div class="empty-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+        <polyline points="2 17 12 22 22 17"/>
+        <polyline points="2 12 12 17 22 12"/>
+      </svg>
+    </div>
+    <p class="empty-title">Nenhuma produção ainda</p>
+    <p class="empty-desc">
+      Cadastre impressoras e comece a registrar produções para ver métricas aqui.
+    </p>
+    <div class="empty-actions">
+      <a class="empty-btn empty-btn--primary" routerLink="/producao">Nova Produção</a>
+      <a class="empty-btn" routerLink="/impressoras">Gerenciar Impressoras</a>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════
+     Floating Action Button (mobile, mirrors header CTA condition)
+═══════════════════════════════════════ -->
+@if (!hasProductionToday()) {
+  <a class="fab" routerLink="/producao" aria-label="Registrar produção hoje">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  </a>
+}
+
+<!-- ═══════════════════════════════════════
+     Badge toast (gamificação)
+═══════════════════════════════════════ -->
+@if (badgeToast()) {
+  <div class="badge-toast" role="status" aria-live="polite">
+    <span class="badge-toast__icon">{{ badgeToast()!.icon }}</span>
+    <div class="badge-toast__content">
+      <p class="badge-toast__title">Conquista desbloqueada!</p>
+      <p class="badge-toast__label">{{ badgeToast()!.label }}</p>
+    </div>
+    <button class="badge-toast__close" (click)="dismissBadgeToast()" aria-label="Fechar">✕</button>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════
+     Pro modal
+═══════════════════════════════════════ -->
+@if (showProModal()) {
+  <div class="modal-overlay" (click)="closeProModal()" role="dialog" aria-modal="true"
+    aria-label="Plano Pro">
+    <div class="pro-modal" (click)="$event.stopPropagation()">
+      <button class="pro-modal__close" (click)="closeProModal()" aria-label="Fechar">✕</button>
+
+      <div class="pro-modal__header">
+        <span class="pro-modal__badge">⚡ PRO</span>
+        <h2 class="pro-modal__title">Plano Pro</h2>
+        <p class="pro-modal__sub">Em breve</p>
+      </div>
+
+      <ul class="pro-modal__features">
+        <li>📊 Projeções avançadas de faturamento</li>
+        <li>🧮 Simulação de lucro por cenário</li>
+        <li>📄 Relatórios completos em PDF</li>
+        <li>🔔 Alertas automáticos de margem baixa</li>
+        <li>📈 Comparativo semanal e mensal</li>
+      </ul>
+
+      <div class="pro-modal__anchor">
+        "Usuários que acompanham margem e projeções aumentam até <strong>30% o lucro</strong> em 60 dias."
+      </div>
+
+      @if (upgradeEmailSent()) {
+        <div class="pro-modal__success">
+          🚀 Perfeito! Te avisaremos assim que estiver disponível.
+        </div>
+      } @else if (alreadyOnList()) {
+        <div class="pro-modal__success pro-modal__success--already">
+          ✔ Você já está na lista
+        </div>
+      } @else {
+        <div class="pro-modal__form">
+          <div class="pro-modal__field">
+            <label class="pro-modal__label" for="pro-name">Nome</label>
+            <input id="pro-name" type="text" class="pro-modal__input"
+              placeholder="Seu nome"
+              [ngModel]="proName()"
+              (ngModelChange)="proName.set($event)" />
+          </div>
+          <div class="pro-modal__field">
+            <label class="pro-modal__label" for="pro-email">E-mail</label>
+            <input id="pro-email" type="email" class="pro-modal__input"
+              placeholder="seu@email.com"
+              [ngModel]="proEmail()"
+              (ngModelChange)="proEmail.set($event)" />
+          </div>
+        </div>
+        <button class="pro-modal__cta"
+          [disabled]="proSubmitting() || !proName().trim() || !proEmail().trim()"
+          (click)="requestEarlyAccess()">
+          {{ proSubmitting() ? 'Enviando...' : 'Quero acesso antecipado' }}
+        </button>
+      }
+    </div>
+  </div>
+}
