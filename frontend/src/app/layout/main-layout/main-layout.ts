@@ -11,6 +11,7 @@ import { filter } from 'rxjs';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { User } from '../../features/auth/models/user.model';
 import { ThemeService } from '../../core/services/theme.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-main-layout',
@@ -30,10 +31,10 @@ export class MainLayoutComponent {
   readonly userMenuOpen = signal(false);
   readonly currentUser = this.authService.currentUser;
 
-  /** Sidebar brand: user name from auth (same source as localStorage valoreon_auth_user), else Valoreon */
+  /** Sidebar brand: user name from auth, else app name */
   readonly sidebarBrandName = computed(() => {
     const raw = this.authService.currentUser()?.name?.trim();
-    if (!raw) return 'Valoreon';
+    if (!raw) return environment.appName;
     return raw.charAt(0).toUpperCase() + raw.slice(1);
   });
 

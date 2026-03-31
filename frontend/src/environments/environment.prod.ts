@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.valtrix.com.br/api'
+  apiUrl: 'https://api.valtrix.com.br/api',
+  appName: 'Valtrix',
 };
