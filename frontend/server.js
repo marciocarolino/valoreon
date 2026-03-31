@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const app = express();
 
 // 🔥 Porta correta para Railway
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.PORT) || 8080;
 
 // 🔍 Debug (importante)
 console.log('ENV PORT:', process.env.PORT);
