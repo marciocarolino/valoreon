@@ -157,6 +157,8 @@ public class ProductionService {
 		production.setSalePrice(dto.getSalePrice());
 		production.setFilamentPrice(dto.getFilamentPrice());
 		production.setShippingCost(dto.getShippingCost());
+		production.setSalesChannel(dto.getSalesChannel() != null ? dto.getSalesChannel() : "DIRECT");
+		production.setFeePercentage(dto.getFeePercentage() != null ? dto.getFeePercentage() : java.math.BigDecimal.ZERO);
 		production.setPrinter(printer);
 		production.setUser(currentUser);
 
@@ -212,6 +214,12 @@ public class ProductionService {
 		}
 		// shippingCost is nullable — explicit null means "remove freight"
 		production.setShippingCost(dto.getShippingCost());
+		if (dto.getSalesChannel() != null) {
+			production.setSalesChannel(dto.getSalesChannel());
+		}
+		if (dto.getFeePercentage() != null) {
+			production.setFeePercentage(dto.getFeePercentage());
+		}
 		if (dto.getPrinterId() != null) {
 			Printer printer = printerRepository.findByIdAndUser(dto.getPrinterId(), user)
 					.orElseThrow(() -> new ApiException("Printer not found", HttpStatus.NOT_FOUND));
@@ -312,6 +320,8 @@ public class ProductionService {
 		dto.setPrinterId(p.getPrinter() != null ? p.getPrinter().getId() : null);
 		dto.setPrinterName(p.getPrinter() != null ? p.getPrinter().getName() : null);
 		dto.setStatus(p.getStatus() != null ? p.getStatus().name() : ProductionStatus.ACTIVE.name());
+		dto.setSalesChannel(p.getSalesChannel() != null ? p.getSalesChannel() : "DIRECT");
+		dto.setFeePercentage(p.getFeePercentage() != null ? p.getFeePercentage() : java.math.BigDecimal.ZERO);
 		return dto;
 	}
 }

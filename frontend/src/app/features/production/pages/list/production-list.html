@@ -828,7 +828,7 @@
             </div>
           </div>
 
-          <!-- Detalhes: energia + material -->
+          <!-- Detalhes: energia + material + frete + taxa -->
           <details class="calc-details">
             <summary class="calc-details-summary">Detalhes do custo</summary>
             <div class="calc-details-body">
@@ -854,6 +854,36 @@
                 </span>
                 <span class="calc-item-value">{{ formatCurrency(materialCost()) }}</span>
               </div>
+              @if (totalsForDisplay().feeAmt > 0) {
+                <div class="calc-item">
+                  <span class="calc-item-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round" aria-hidden="true">
+                      <rect x="2" y="5" width="20" height="14" rx="2"/>
+                      <line x1="2" y1="10" x2="22" y2="10"/>
+                    </svg>
+                    Taxa marketplace
+                  </span>
+                  <span class="calc-item-value">{{ formatCurrency(totalsForDisplay().feeAmt) }}</span>
+                </div>
+              }
+              @if (totalsForDisplay().freight > 0) {
+                <div class="calc-item">
+                  <span class="calc-item-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round" aria-hidden="true">
+                      <rect x="1" y="3" width="15" height="13" rx="1"/>
+                      <path d="M16 8h4l3 3v5h-7V8z"/>
+                      <circle cx="5.5" cy="18.5" r="2.5"/>
+                      <circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>
+                    Frete
+                  </span>
+                  <span class="calc-item-value">{{ formatCurrency(totalsForDisplay().freight) }}</span>
+                </div>
+              }
             </div>
           </details>
         </div>

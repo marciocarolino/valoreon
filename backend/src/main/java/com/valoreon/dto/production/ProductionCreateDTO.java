@@ -44,4 +44,8 @@ public class ProductionCreateDTO {
 	private Long printerId;
 
 	private BigDecimal shippingCost;
+
+	private String salesChannel;
+
+	private BigDecimal feePercentage;
 }

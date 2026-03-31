@@ -72,9 +72,18 @@ public class Production {
 	@Column(name = "shipping_cost", precision = 15, scale = 2)
 	private BigDecimal shippingCost;
 
+	@Builder.Default
+	@Column(name = "sales_channel", length = 50)
+	private String salesChannel = "DIRECT";
+
+	@Builder.Default
+	@Column(name = "fee_percentage", precision = 5, scale = 2)
+	private BigDecimal feePercentage = BigDecimal.ZERO;
+
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
 
+	@Builder.Default
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private ProductionStatus status = ProductionStatus.ACTIVE;
@@ -123,15 +132,20 @@ public class Production {
 
 		this.materialCost = materialCostUnit.multiply(qty).setScale(4, RoundingMode.HALF_UP);
 		this.energyCost = energyCostUnit.multiply(qty).setScale(4, RoundingMode.HALF_UP);
-		this.totalCost = materialCost.add(energyCost).setScale(4, RoundingMode.HALF_UP);
 
 		BigDecimal totalRevenue = salePrice.multiply(qty);
 
 		BigDecimal shipping = this.shippingCost != null ? this.shippingCost : BigDecimal.ZERO;
-		this.profit = totalRevenue.subtract(totalCost).subtract(shipping).setScale(4, RoundingMode.HALF_UP);
+		BigDecimal fee = (this.feePercentage != null && this.feePercentage.compareTo(BigDecimal.ZERO) != 0)
+				? totalRevenue.multiply(this.feePercentage).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP)
+				: BigDecimal.ZERO;
+
+		this.totalCost = this.materialCost.add(this.energyCost).add(shipping).add(fee)
+				.setScale(4, RoundingMode.HALF_UP);
+		this.profit = totalRevenue.subtract(this.totalCost).setScale(4, RoundingMode.HALF_UP);
 
 		if (totalRevenue.compareTo(BigDecimal.ZERO) != 0) {
-			this.margin = profit
+			this.margin = this.profit
 					.divide(totalRevenue, 10, RoundingMode.HALF_UP)
 					.multiply(BigDecimal.valueOf(100))
 					.setScale(4, RoundingMode.HALF_UP);

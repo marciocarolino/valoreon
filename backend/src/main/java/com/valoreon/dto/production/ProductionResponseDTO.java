@@ -37,4 +37,6 @@ public class ProductionResponseDTO {
 	private Long printerId;
 	private String printerName;
 	private String status;
+	private String salesChannel;
+	private BigDecimal feePercentage;
 }

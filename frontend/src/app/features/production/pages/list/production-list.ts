@@ -173,10 +173,10 @@ export class ProductionListComponent implements OnInit {
   readonly sizeOptions: ProductionSize[]          = ['Pequeno', 'Médio', 'Grande'];
 
   readonly channelOptions = [
-    { label: 'Venda direta (0%)',   value: 'direct',       fee: 0  },
-    { label: 'Amazon (15%)',        value: 'amazon',       fee: 15 },
-    { label: 'Mercado Livre (18%)', value: 'mercadolivre', fee: 18 },
-    { label: 'Shopee (20%)',        value: 'shopee',       fee: 20 },
+    { label: 'Venda direta (0%)',   value: 'DIRECT',        fee: 0  },
+    { label: 'Amazon (15%)',        value: 'AMAZON',        fee: 15 },
+    { label: 'Mercado Livre (18%)', value: 'MERCADO_LIVRE', fee: 18 },
+    { label: 'Shopee (20%)',        value: 'SHOPEE',        fee: 20 },
   ];
 
   readonly printerFilterOptions = computed((): AppDropdownOption<number | null>[] => {
@@ -204,7 +204,7 @@ export class ProductionListComponent implements OnInit {
     quantity:       [null as number | null,             [Validators.required, Validators.min(1)]],
     printTimeHours: [null as number | null,             [Validators.required, Validators.min(0.01)]],
     salePrice:      [null as number | null,             [Validators.required, Validators.min(0.01)]],
-    channel:        ['direct'],
+    channel:        ['DIRECT'],
     feePercent:     [0, [Validators.min(0), Validators.max(100)]],
     shippingCost:   [null as number | null],
   });
@@ -518,8 +518,7 @@ export class ProductionListComponent implements OnInit {
     this.formError.set(null);
     this.fieldErrors.set({});
     this.hasDraft.set(false);
-    this.channelFeePercent.set(0);
-    this.channelFeeAmount.set(0);
+
     const savedShipping = typeof prod.shippingCost === 'number' && prod.shippingCost > 0
       ? prod.shippingCost : 0;
     this.includeShipping.set(savedShipping > 0);
@@ -528,7 +527,11 @@ export class ProductionListComponent implements OnInit {
       ? String(savedShipping).replace('.', ',')
       : '');
 
-    console.log('[Edit production]', prod);
+    // Restore saved channel and fee, defaulting to DIRECT/0 for legacy records
+    const savedChannel = prod.salesChannel ?? 'DIRECT';
+    const savedFee = typeof prod.feePercentage === 'number' ? prod.feePercentage : 0;
+    this.channelFeePercent.set(savedFee);
+    this.channelFeeAmount.set(0);
 
     const printerId = prod.printer?.id ?? prod.printerId;
     const rawFilament = prod.filamentPrice ?? prod.filament_price;
@@ -553,8 +556,8 @@ export class ProductionListComponent implements OnInit {
         quantity:       prod.quantity,
         printTimeHours: prod.printTimeHours,
         salePrice:      prod.salePrice,
-        channel:        'direct',
-        feePercent:     0,
+        channel:        savedChannel,
+        feePercent:     savedFee,
         shippingCost:   null,
       },
       { emitEvent: false },
@@ -740,7 +743,7 @@ export class ProductionListComponent implements OnInit {
       printerId: null, name: '', material: null, filamentPrice: null,
       color: null, size: null, weight: null, quantity: null,
       printTimeHours: null, salePrice: null,
-      channel: 'direct', feePercent: 0, shippingCost: null,
+      channel: 'DIRECT', feePercent: 0, shippingCost: null,
     });
     this.channelFeePercent.set(0);
     this.channelFeeAmount.set(0);
@@ -799,7 +802,7 @@ export class ProductionListComponent implements OnInit {
     if (this.form.invalid || this.isSaving()) return;
 
     const { printerId, name, material, filamentPrice, color, size,
-            weight, quantity, printTimeHours, salePrice } = this.form.getRawValue();
+            weight, quantity, printTimeHours, salePrice, channel, feePercent } = this.form.getRawValue();
 
     // Explicit guard — belt-and-suspenders on top of form validation
     if (!name?.trim()) {
@@ -832,6 +835,8 @@ export class ProductionListComponent implements OnInit {
       profit:         this.estimatedProfit(),
       margin:         this.margin(),
       shippingCost:   shippingCost > 0 ? shippingCost : null,
+      salesChannel:   channel ?? 'DIRECT',
+      feePercentage:  feePercent ?? 0,
     };
 
     this.isSaving.set(true);

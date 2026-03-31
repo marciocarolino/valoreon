@@ -29,6 +29,8 @@ export interface Production {
   energyCost?:    number;
   materialCost?:  number;
   shippingCost?:  number;
+  salesChannel?:  string;
+  feePercentage?: number;
   userEmail:      string;
   createdAt:      string;
   status:         ProductionStatus;
@@ -64,4 +66,6 @@ export interface CreateProductionRequest {
   profit:         number;
   margin:         number;
   userEmail:      string;
+  salesChannel?:  string;
+  feePercentage?: number;
 }

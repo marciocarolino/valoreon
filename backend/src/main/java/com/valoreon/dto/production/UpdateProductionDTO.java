@@ -20,4 +20,8 @@ public class UpdateProductionDTO {
 	private BigDecimal filamentPrice;
 	private Long printerId;
 	private BigDecimal shippingCost;
+
+	private String salesChannel;
+
+	private BigDecimal feePercentage;
 }
