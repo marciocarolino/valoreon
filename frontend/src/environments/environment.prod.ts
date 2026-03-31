@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.valoreon.com/api',
+  apiUrl: 'https://valoreon-production.up.railway.app/api'
 };

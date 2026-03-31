@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import {
   CreatePrinterRequest,
@@ -26,7 +26,6 @@ export class PrinterService {
   getPrinterSummary(id: number): Observable<PrinterFinancialSummary> {
     const url = `${this.baseUrl}/${id}/summary`;
     return this.http.get<unknown>(url).pipe(
-      tap(response => console.log('[GET /printers/{id}/summary]', { id, response })),
       map(body => this.normalizePrinterSummary(body)),
     );
   }

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface TodayMetrics {
   revenue: number;
@@ -69,7 +70,7 @@ export interface WeekKpiData {
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private readonly http = inject(HttpClient);
-  private readonly api = '/api/dashboard';
+  private readonly api = `${environment.apiUrl}/dashboard`;
 
   getMetrics(): Observable<DashboardMetrics> {
     return this.http.get<DashboardMetrics>(`${this.api}/metrics`);
@@ -102,6 +103,6 @@ export class DashboardService {
   }
 
   requestProAccess(name: string, email: string): Observable<void> {
-    return this.http.post<void>('/api/pro-access', { name, email });
+    return this.http.post<void>(`${environment.apiUrl}/pro-access`, { name, email });
   }
 }
