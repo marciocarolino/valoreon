@@ -122,7 +122,7 @@
       </div>
       <p class="stat-value stat-value--profit">{{ fmt(profit()) }}</p>
       <p class="stat-formula">
-        <span class="stat-formula__hint">Total vendido − custos</span>
+        <span class="stat-formula__hint">Receita bruta − custos</span>
         <span class="stat-formula__nums">({{ fmt(revenue()) }} − {{ fmt(costs()) }})</span>
       </p>
       <p class="stat-sub">
@@ -130,15 +130,15 @@
       </p>
     </div>
 
-    <!-- Total vendido -->
+    <!-- Receita bruta -->
     <div class="stat-card stat-card--secondary" style="--card-accent:#6366f1">
       <div class="stat-top">
-        <span class="stat-label">Total vendido</span>
-        <span class="stat-dot" aria-hidden="true"></span>
+        <span class="stat-label">Receita bruta</span>
+        <span class="stat-dot" aria-hidden="true" title="Total faturado sem descontar custos"></span>
       </div>
       <p class="stat-value">{{ fmt(revenue()) }}</p>
       <p class="stat-sub">
-        @if (prints() === 0) { Nenhuma produção ainda } @else { Soma do que você faturou nas vendas }
+        @if (prints() === 0) { Nenhuma produção ainda } @else { Total faturado sem descontar custos }
       </p>
     </div>
 
@@ -222,9 +222,9 @@
   ═══════════════════════════════════════ -->
   <div class="charts-container">
     <div class="chart-card">
-      <h3 class="chart-card__title">Receita</h3>
+      <h3 class="chart-card__title">Receita bruta ao longo do tempo</h3>
       <div class="chart-card__canvas-wrap">
-        <canvas id="revenueChart" aria-label="Evolução da receita na semana"></canvas>
+        <canvas id="revenueChart" aria-label="Evolução da receita bruta ao longo do tempo"></canvas>
       </div>
     </div>
 

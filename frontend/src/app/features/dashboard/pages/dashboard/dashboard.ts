@@ -592,7 +592,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         labels: revenueLabels,
         datasets: [
           {
-            label: 'Receita',
+            label: 'Receita bruta',
             data: revenueValues,
             tension: 0.4,
             fill: true,
