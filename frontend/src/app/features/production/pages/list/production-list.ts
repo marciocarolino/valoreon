@@ -147,6 +147,7 @@ export class ProductionListComponent implements OnInit {
   readonly channelFeeAmount  = signal(0);
   readonly includeShipping   = signal(false);
   readonly shippingCostInput = signal(0);
+  readonly shippingRaw       = signal('');
 
   /**
    * Totais do modal: sempre a partir de `salePrice`/`quantity` no formulário, custo de `estimatedCost()` (recalculate),
@@ -519,8 +520,13 @@ export class ProductionListComponent implements OnInit {
     this.hasDraft.set(false);
     this.channelFeePercent.set(0);
     this.channelFeeAmount.set(0);
-    this.includeShipping.set(false);
-    this.shippingCostInput.set(0);
+    const savedShipping = typeof prod.shippingCost === 'number' && prod.shippingCost > 0
+      ? prod.shippingCost : 0;
+    this.includeShipping.set(savedShipping > 0);
+    this.shippingCostInput.set(savedShipping);
+    this.shippingRaw.set(savedShipping > 0
+      ? String(savedShipping).replace('.', ',')
+      : '');
 
     console.log('[Edit production]', prod);
 
@@ -740,6 +746,7 @@ export class ProductionListComponent implements OnInit {
     this.channelFeeAmount.set(0);
     this.includeShipping.set(false);
     this.shippingCostInput.set(0);
+    this.shippingRaw.set('');
     this.energyCost.set(0);
     this.materialCost.set(0);
     this.estimatedCost.set(0);
@@ -771,16 +778,19 @@ export class ProductionListComponent implements OnInit {
     this.includeShipping.set(val);
     if (!val) {
       this.shippingCostInput.set(0);
+      this.shippingRaw.set('');
       this.form.patchValue({ shippingCost: null }, { emitEvent: false });
     }
     this.recalculate();
   }
 
   onShippingCostChange(val: number | string): void {
-    const n = Number(val);
+    const raw = String(val ?? '');
+    this.shippingRaw.set(raw);
+    const normalized = raw.replace(',', '.');
+    const n = parseFloat(normalized);
     const v = Number.isFinite(n) && n >= 0 ? n : 0;
     this.shippingCostInput.set(v);
-    this.form.patchValue({ shippingCost: v || null }, { emitEvent: false });
     if (this.includeShipping()) this.recalculate();
   }
 
@@ -803,6 +813,8 @@ export class ProductionListComponent implements OnInit {
       return;
     }
 
+    const shippingCost = this.includeShipping() ? (this.shippingCostInput() || 0) : 0;
+
     const payload = {
       printerId:      Number(printerId),
       name:           name.trim(),
@@ -819,6 +831,7 @@ export class ProductionListComponent implements OnInit {
       totalCost:      this.estimatedCost(),
       profit:         this.estimatedProfit(),
       margin:         this.margin(),
+      shippingCost:   shippingCost > 0 ? shippingCost : null,
     };
 
     this.isSaving.set(true);

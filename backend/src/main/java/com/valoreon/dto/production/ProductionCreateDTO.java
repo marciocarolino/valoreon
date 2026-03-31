@@ -42,4 +42,6 @@ public class ProductionCreateDTO {
 
 	@NotNull(message = "Printer ID is required")
 	private Long printerId;
+
+	private BigDecimal shippingCost;
 }

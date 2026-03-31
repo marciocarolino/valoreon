@@ -69,6 +69,9 @@ public class Production {
 	@Column(name = "margin", precision = 10, scale = 4)
 	private BigDecimal margin;
 
+	@Column(name = "shipping_cost", precision = 15, scale = 2)
+	private BigDecimal shippingCost;
+
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
 
@@ -124,7 +127,8 @@ public class Production {
 
 		BigDecimal totalRevenue = salePrice.multiply(qty);
 
-		this.profit = totalRevenue.subtract(totalCost).setScale(4, RoundingMode.HALF_UP);
+		BigDecimal shipping = this.shippingCost != null ? this.shippingCost : BigDecimal.ZERO;
+		this.profit = totalRevenue.subtract(totalCost).subtract(shipping).setScale(4, RoundingMode.HALF_UP);
 
 		if (totalRevenue.compareTo(BigDecimal.ZERO) != 0) {
 			this.margin = profit

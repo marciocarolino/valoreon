@@ -28,6 +28,7 @@ export interface Production {
   margin?:        number;
   energyCost?:    number;
   materialCost?:  number;
+  shippingCost?:  number;
   userEmail:      string;
   createdAt:      string;
   status:         ProductionStatus;

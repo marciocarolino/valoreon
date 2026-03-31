@@ -75,7 +75,7 @@
 }
 
 .toast--error {
-  background: #1e1a1a; border: 1px solid rgba(239,68,68,0.35); color: #fca5a5;
+  background: var(--bg-card, #1e1a1a); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5;
 }
 
 .toast span { flex: 1; line-height: 1.4; }

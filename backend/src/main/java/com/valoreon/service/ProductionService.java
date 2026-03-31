@@ -156,6 +156,7 @@ public class ProductionService {
 		production.setPrintTimeHours(dto.getPrintTimeHours());
 		production.setSalePrice(dto.getSalePrice());
 		production.setFilamentPrice(dto.getFilamentPrice());
+		production.setShippingCost(dto.getShippingCost());
 		production.setPrinter(printer);
 		production.setUser(currentUser);
 
@@ -209,6 +210,8 @@ public class ProductionService {
 		if (dto.getFilamentPrice() != null) {
 			production.setFilamentPrice(dto.getFilamentPrice());
 		}
+		// shippingCost is nullable — explicit null means "remove freight"
+		production.setShippingCost(dto.getShippingCost());
 		if (dto.getPrinterId() != null) {
 			Printer printer = printerRepository.findByIdAndUser(dto.getPrinterId(), user)
 					.orElseThrow(() -> new ApiException("Printer not found", HttpStatus.NOT_FOUND));
@@ -304,6 +307,7 @@ public class ProductionService {
 		dto.setTotalCost(p.getTotalCost());
 		dto.setProfit(p.getProfit());
 		dto.setMargin(p.getMargin());
+		dto.setShippingCost(p.getShippingCost());
 		dto.setCreatedAt(p.getCreatedAt());
 		dto.setPrinterId(p.getPrinter() != null ? p.getPrinter().getId() : null);
 		dto.setPrinterName(p.getPrinter() != null ? p.getPrinter().getName() : null);

@@ -1,3 +1,9 @@
+/*
+  All colors come from the global token system defined in styles.css.
+  :root  = dark defaults
+  body.light overrides tokens → this component adapts automatically.
+*/
+
 :host {
   display: block;
   position: relative;
@@ -12,6 +18,7 @@
   min-width: 4.5rem;
 }
 
+/* ── Trigger button ───────────────────────────── */
 .app-dropdown__trigger {
   display: flex;
   align-items: center;
@@ -24,20 +31,21 @@
   font-size: 0.9375rem;
   font-weight: 500;
   text-align: left;
-  color: #e2e8f0;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-card);
   border-radius: 10px;
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .app-dropdown__trigger:hover:not(:disabled) {
-  border-color: rgba(99, 102, 241, 0.45);
+  background: var(--bg-input-hover);
+  border-color: var(--border-focus);
 }
 
 .app-dropdown__trigger:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -47,9 +55,10 @@
 }
 
 .app-dropdown--invalid .app-dropdown__trigger {
-  border-color: rgba(239, 68, 68, 0.55);
+  border-color: var(--border-error);
 }
 
+/* ── Value + chevron ──────────────────────────── */
 .app-dropdown__value {
   flex: 1;
   min-width: 0;
@@ -60,31 +69,32 @@
 
 .app-dropdown__chevron {
   flex-shrink: 0;
-  opacity: 0.85;
-  transition: transform 0.18s ease;
+  opacity: 0.6;
+  color: var(--text-secondary);
+  transition: transform 0.18s ease, opacity 0.15s;
 }
 
 .app-dropdown--open .app-dropdown__chevron {
   transform: rotate(180deg);
+  opacity: 0.9;
 }
 
+/* ── Loading spinner ──────────────────────────── */
 .app-dropdown__spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  border-top-color: #fff;
+  border: 2px solid var(--border-card);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: app-dd-spin 0.65s linear infinite;
   flex-shrink: 0;
 }
 
 @keyframes app-dd-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-/* Panel: at least as wide as trigger (up to 300px cap), content-sized between 220–300px */
+/* ── Dropdown panel ───────────────────────────── */
 .app-dropdown__list {
   position: absolute;
   left: 0;
@@ -101,12 +111,12 @@
   max-height: 200px;
   overflow-x: hidden;
   overflow-y: auto;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
   border-radius: 10px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-card);
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-color: var(--border-card) transparent;
 }
 
 .app-dropdown__list::-webkit-scrollbar {
@@ -118,14 +128,15 @@
 }
 
 .app-dropdown__list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--border-card);
   border-radius: 3px;
 }
 
 .app-dropdown__list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: var(--border);
 }
 
+/* ── Items ────────────────────────────────────── */
 .app-dropdown__item {
   display: flex;
   align-items: center;
@@ -134,36 +145,39 @@
   padding: 10px 14px;
   cursor: pointer;
   font-size: 0.9375rem;
-  color: #e2e8f0;
+  color: var(--text-primary);
   transition: background 0.12s ease;
   min-width: 0;
 }
 
 .app-dropdown__item:hover:not(.app-dropdown__item--disabled) {
-  background: rgba(99, 102, 241, 0.15);
+  background: var(--nav-hover-bg);
+  color: var(--text-primary);
 }
 
 .app-dropdown__item--selected {
-  background: #6366f1;
-  color: #ffffff;
+  background: rgba(99, 102, 241, 0.14);
+  color: var(--accent-light);
   font-weight: 600;
 }
 
 .app-dropdown__item--selected:hover {
-  background: #6366f1;
+  background: rgba(99, 102, 241, 0.2);
 }
 
 .app-dropdown__item--disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
 }
 
+/* ── Check / spacer ───────────────────────────── */
 .app-dropdown__check {
   flex-shrink: 0;
   width: 1.1em;
   font-size: 0.85em;
   line-height: 1;
+  color: var(--accent);
 }
 
 .app-dropdown__check--spacer {

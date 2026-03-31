@@ -32,6 +32,7 @@ public class ProductionResponseDTO {
 	private BigDecimal totalCost;
 	private BigDecimal profit;
 	private BigDecimal margin;
+	private BigDecimal shippingCost;
 	private LocalDateTime createdAt;
 	private Long printerId;
 	private String printerName;
